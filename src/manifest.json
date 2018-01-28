@@ -1,0 +1,31 @@
+{
+    "manifest_version": 2,
+    "name": "SixIndicator",
+    "version": "1.0.0",
+    "author": "HostedDinner",
+    "description": "Shows a simple icon, if IPv6 or IPv4 was used for the request of the site.",
+    "homepage_url": "https://github.com/HostedDinner/SixIndicator",
+    "icons": {
+        "48": "icons/v6only.svg",
+        "96": "icons/v6only.svg"
+    },
+    "permissions": [
+        "tabs",
+        "webRequest",
+        "<all_urls>"
+    ],
+    "page_action": {
+        "browser_style": true,
+        "default_icon": {
+            "19": "icons/unknown.svg",
+            "38": "icons/unknown.svg"
+        },
+        "default_title": "Click here for more information",
+        "default_popup": "popup/information.html"
+    },
+    "background": {
+        "scripts": [
+            "background.js"
+        ]
+    }
+}
