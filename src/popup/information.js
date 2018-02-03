@@ -78,6 +78,10 @@ function deleteAllRows(tableElement) {
 
 document.addEventListener("DOMContentLoaded", () =>
 {
+    
+    //browser chrome fix
+    const browser = window.browser || window.chrome;
+
     let backgroundConnectionPort = browser.runtime.connect();
 
     backgroundConnectionPort.onMessage.addListener((message) => {

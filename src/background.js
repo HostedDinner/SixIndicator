@@ -1,6 +1,9 @@
 
 // variables / consts
 
+//browser chrome fix
+const browser = window.browser || window.chrome;
+
 const debugLog = false;
 
 const requestFilter = {
