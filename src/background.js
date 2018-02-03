@@ -20,8 +20,8 @@ const IPVERSIONS = {
 const ICONDIR = 'icons/';
 
 let storageMap = new Map();
-let activeTabId = null;
 let popupConnectionPort = null;
+let popupConnectionTabId = null;
 
 
 // types
@@ -68,8 +68,16 @@ function CounterIpInfo(hostname, ip, isCached, isMain){
 
 // functions
 
-function updateActiveTabPageAction(){
-    updatePageAction(activeTabId);
+function queryActiveTabId(){
+    return new Promise((resolve, reject) => {
+        browser.tabs.query({active:true, currentWindow:true}, (tabs) => {
+            if(tabs.length === 1){
+                return resolve(tabs[0].id);
+            }else{
+                return reject(null);
+            } 
+        });
+    });
 }
 
 function updatePageAction(tabId){
@@ -86,7 +94,7 @@ function updatePageAction(tabId){
             let pathSVG = [ICONDIR, tabStorage.main.ipVersion, '.svg'].join('');
 
             // send Message to information popup (if its connected at the moment)
-            if(popupConnectionPort !== null && tabId === activeTabId)
+            if(popupConnectionPort !== null && tabId === popupConnectionTabId)
                 popupConnectionPort.postMessage({action: 'updateContent', tabStorage});
 
             // sets the PageAction title and icon accordingly
@@ -192,7 +200,6 @@ browser.webRequest.onResponseStarted.addListener((details) => {
  * in the case of a new tab the "?" is shown
  */
 browser.tabs.onActivated.addListener((activeInfo) => {
-    activeTabId = activeInfo.tabId;
     updatePageAction(activeInfo.tabId);
 });
 
@@ -241,7 +248,10 @@ browser.runtime.onConnect.addListener((port) => {
         if(action !== undefined){
             switch(action){
                 case 'requestContent':
-                    updateActiveTabPageAction();
+                    queryActiveTabId().then((tabId) => {
+                        popupConnectionTabId = tabId;
+                        updatePageAction(popupConnectionTabId);
+                    });
                     break;
             }
         }
@@ -250,6 +260,7 @@ browser.runtime.onConnect.addListener((port) => {
     
     popupConnectionPort.onDisconnect.addListener((port) => {
         popupConnectionPort = null;
+        popupConnectionTabId = null;
         if(debugLog)
             console.log('Page has disconnected');
     });
