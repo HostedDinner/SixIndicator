@@ -25,19 +25,19 @@ let popupConnectionPort = null;
 
 function TabStorage(){
     this.hostnames = new Map();
-    this.main = new IpInfo('', '', '', IPVERSIONS.UNKN, false);
+    this.main = new IpInfo('', '', false);
 }
 
 function IpInfo(url, ip, isCached){
     this.url = url;
     this.hostname = url !== '' ? new URL(url).hostname : '';
     this.isCached = isCached;
-    if(ip !== null){
-        this.ip = ip;
-        this.ipVersion = getIPVersion(ip);
-    }else{
+    if(ip === undefined || ip === null || ip === ''){
         this.ip = '';
         this.ipVersion = isCached ? IPVERSIONS.CACHE : IPVERSIONS.UNKN;
+    }else{
+        this.ip = ip;
+        this.ipVersion = getIPVersion(ip);
     }
 }
 
@@ -45,12 +45,12 @@ function CounterIpInfo(hostname, ip, isCached, isMain){
     this.hostname = hostname;
     this.isCached = isCached;
     this.isMain = isMain;
-    if(ip !== null){
-        this.ip = ip;
-        this.ipVersion = getIPVersion(ip);
-    }else{
+    if(ip === undefined || ip === null || ip === ''){
         this.ip = '';
         this.ipVersion = isCached ? IPVERSIONS.CACHE : IPVERSIONS.UNKN;
+    }else{
+        this.ip = ip;
+        this.ipVersion = getIPVersion(ip);
     }
     this.counter = 1;
     /*this.incrementCounter = (isCached) => {
@@ -133,7 +133,7 @@ function getIPVersion(ipAddress){
  */
 browser.webRequest.onResponseStarted.addListener((details) => {
     let tabId = details.tabId;
-    let ip = details.ip;
+    let ip = details.ip || '';
     let host = new URL(details.url).hostname;
     let url = details.url;
     let requestType = details.type;
