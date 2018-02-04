@@ -68,6 +68,10 @@ function CounterIpInfo(hostname, ip, isCached, isMain){
 
 // functions
 
+/**
+ * Gets the active Tab ID as promise.
+ * @returns {Promise}
+ */
 function queryActiveTabId(){
     return new Promise((resolve, reject) => {
         browser.tabs.query({active:true, currentWindow:true}, (tabs) => {
@@ -81,40 +85,41 @@ function queryActiveTabId(){
 }
 
 function updatePageAction(tabId){
-    if(tabId !== -1){
-        let tabStorage = storageMap.get(tabId);
-        if(tabStorage !== undefined){
-            
-            let title = '';
-            if(tabStorage.main.isCached){
-                title = [tabStorage.main.hostname, ' (Cached)'].join('');
-            }else{
-                title = [tabStorage.main.hostname, ' (', tabStorage.main.ip, ')'].join('');
-            }
-            let pathSVG = [ICONDIR, tabStorage.main.ipVersion, '.svg'].join('');
+    if(tabId === -1)
+        return;
+    
+    let tabStorage = storageMap.get(tabId);
+    if(tabStorage !== undefined){
 
-            // send Message to information popup (if its connected at the moment)
-            if(popupConnectionPort !== null && tabId === popupConnectionTabId)
-                popupConnectionPort.postMessage({action: 'updateContent', tabStorage});
-
-            // sets the PageAction title and icon accordingly
-            browser.pageAction.setTitle({
-                tabId,
-                title
-            });
-            browser.pageAction.setIcon({
-                tabId,
-                path: {
-                    '19': pathSVG,
-                    '38': pathSVG
-                }
-            });
+        let title = '';
+        if(tabStorage.main.isCached){
+            title = [tabStorage.main.hostname, ' (Cached)'].join('');
+        }else{
+            title = [tabStorage.main.hostname, ' (', tabStorage.main.ip, ')'].join('');
         }
-        
-        // show the icon
-        // if the sore was empty (e.g. new page) show the default icon
-        browser.pageAction.show(tabId);
+        let pathSVG = [ICONDIR, tabStorage.main.ipVersion, '.svg'].join('');
+
+        // send Message to information popup (if its connected at the moment)
+        if(popupConnectionPort !== null && tabId === popupConnectionTabId)
+            popupConnectionPort.postMessage({action: 'updateContent', tabStorage});
+
+        // sets the PageAction title and icon accordingly
+        browser.pageAction.setTitle({
+            tabId,
+            title
+        });
+        browser.pageAction.setIcon({
+            tabId,
+            path: {
+                '19': pathSVG,
+                '38': pathSVG
+            }
+        });
     }
+
+    // show the icon
+    // if the sore was empty (e.g. new page) show the default icon
+    browser.pageAction.show(tabId);
 }
 
 /**
@@ -139,10 +144,23 @@ function getIPVersion(ipAddress){
 
 // listeners
 
+
+/**
+ * (Debugging only) Called when a request is beeing send.
+ */
+if(debugLog){
+    browser.webRequest.onBeforeRequest.addListener((details) => {
+        console.log('[' + details.tabId + '] ' + details.requestId + ": Request started " + details.url);
+    }, requestFilter);
+}
+
 /*
  * called for every request
  */
 browser.webRequest.onResponseStarted.addListener((details) => {
+    if(details.tabId === -1)
+        return;
+    
     let tabId = details.tabId;
     let ip = details.ip || '';
     let host = new URL(details.url).hostname;
@@ -150,6 +168,9 @@ browser.webRequest.onResponseStarted.addListener((details) => {
     let requestType = details.type;
     let isCached = details.fromCache;
     let isMain = requestType === 'main_frame';
+    
+    if(debugLog)
+        console.log('[' + tabId + '] ' + details.requestId + ': Response started ' + url);
     
     // delete associated data, as we made a new main request
     if(isMain){
@@ -193,7 +214,6 @@ browser.webRequest.onResponseStarted.addListener((details) => {
     
 }, requestFilter);
 
-
 /*
  * Called, when a (new) tab gets activated
  * keep showing the icon on every tab and not only on tabs wich have done at least one request
@@ -211,7 +231,6 @@ browser.tabs.onCreated.addListener((tabInfo) => {
     browser.pageAction.show(tabInfo.id);
 });
 
-
 /*
  * called when a tab is moved around
  * Force showing the icon again, sometimes it gets destroyed (bug?)
@@ -220,6 +239,12 @@ browser.tabs.onAttached.addListener((tabId, attachInfo) => {
     browser.pageAction.show(tabId);
 });
 
+/**
+ * called when a tab is removed. We clean up our data.
+ */
+browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
+    storageMap.delete(tabId);
+});
 
 /*
  * Called when a tab is updated.
@@ -227,8 +252,11 @@ browser.tabs.onAttached.addListener((tabId, attachInfo) => {
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
     if(changeInfo.status !== undefined && changeInfo.status === 'complete')
         browser.pageAction.show(tabId);
+    
+    // clean up our data, when a tab itself cleans up
+    if(changeInfo.discarded !== undefined && changeInfo.discarded === true)
+        storageMap.delete(tabInfo.id);
 });
-
 
 /*
  * Handles the connection from our information page
