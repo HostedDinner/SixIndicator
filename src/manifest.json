@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "SixIndicator",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "HostedDinner",
     "description": "Shows a simple icon, if IPv6 or IPv4 was used for the request of the site.",
     "homepage_url": "https://github.com/HostedDinner/SixIndicator",
