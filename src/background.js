@@ -27,7 +27,7 @@ let popupConnectionTabId = null;
 // types
 
 function TabStorage(){
-    this.hostnames = new Map();
+    this.hostnames = {};
     this.main = new IpInfo('', '', false);
 }
 
@@ -76,9 +76,9 @@ function queryActiveTabId(){
     return new Promise((resolve, reject) => {
         browser.tabs.query({active:true, currentWindow:true}, (tabs) => {
             if(tabs.length === 1){
-                return resolve(tabs[0].id);
+                resolve(tabs[0].id);
             }else{
-                return reject(null);
+                reject("Found " + tabs.length + " Tabs, instead of 1");
             } 
         });
     });
@@ -102,7 +102,7 @@ function updatePageAction(tabId){
         // send Message to information popup (if its connected at the moment)
         if(popupConnectionPort !== null && tabId === popupConnectionTabId)
             popupConnectionPort.postMessage({action: 'updateContent', tabStorage});
-
+            
         // sets the PageAction title and icon accordingly
         browser.pageAction.setTitle({
             tabId,
@@ -192,13 +192,12 @@ browser.webRequest.onResponseStarted.addListener((details) => {
     }
     
     
-    let ipsForHostname = tabStorage.hostnames.get(host);
+    let ipsForHostname = tabStorage.hostnames[host];
     if(ipsForHostname === undefined){
-        ipsForHostname = new Map();
-        tabStorage.hostnames.set(host, ipsForHostname);
+        ipsForHostname = {};
     }
     
-    let counterIpInfo = ipsForHostname.get(ip);
+    let counterIpInfo = ipsForHostname[ip];
     if(counterIpInfo === undefined){
         counterIpInfo = new CounterIpInfo(host, ip, isCached, isMain);
     }else{
@@ -208,7 +207,8 @@ browser.webRequest.onResponseStarted.addListener((details) => {
         }
         //counterIpInfo.incrementCounter(isCached);
     }
-    ipsForHostname.set(ip, counterIpInfo);
+    ipsForHostname[ip] = counterIpInfo;
+    tabStorage.hostnames[host] = ipsForHostname;
 
     updatePageAction(tabId);
     

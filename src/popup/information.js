@@ -4,61 +4,80 @@ const ICONDIR = '../icons/';
 /**
  * Builds the table of elements
  * 
- * @param {type} tableElement
+ * @param {HTMLTableElement} table
  * @param {TabStorage} tabStorage
  * @returns {Boolean}
  */
-function buildTable(tableElement, tabStorage){
+function buildTable(table, tabStorage){
     
     let atLeastOne = false;
     
-    deleteAllRows(tableElement);
+    deleteAllRows(table);
     
-    for (var [hostname, ipsForHostname] of tabStorage.hostnames){
-        for(var [ip, counterIpInfo] of ipsForHostname){
-            buildRow(tableElement, counterIpInfo);
-            atLeastOne = true;
+    for(let hostnameProps in tabStorage.hostnames) {
+        if(tabStorage.hostnames.hasOwnProperty(hostnameProps)) {
+            let ipsForHostname = tabStorage.hostnames[hostnameProps];
+            
+            for(var ipsProps in ipsForHostname) {
+                if(ipsForHostname.hasOwnProperty(ipsProps)){
+                    let counterIpInfo = ipsForHostname[ipsProps];
+                    
+                    let newRowElement = table.insertRow(-1);
+                    buildRow(newRowElement, counterIpInfo);
+                    atLeastOne = true;
+                }
+            }
         }
     }
-    
     return atLeastOne;
 }
 
 /**
  * Builds one row
  * 
- * @param {type} tableElement
+ * @param {HTMLTableRowElement} row
  * @param {CounterIpInfo} counterIpInfo
  * @returns {void}
  */
-function buildRow(tableElement, counterIpInfo){
-    
-    let row = tableElement.insertRow(-1);
-    
-    row.insertCell(0).innerHTML = getIpVersionImageTag(counterIpInfo.ipVersion);
+function buildRow(row, counterIpInfo){
+    row.insertCell(0).appendChild(getIpVersionImg(counterIpInfo.ipVersion));
     row.insertCell(1).innerHTML = '(' + counterIpInfo.counter + ')';
-    row.insertCell(2).innerHTML = getHostNameTag(counterIpInfo.hostname, counterIpInfo.isMain);
+    row.insertCell(2).appendChild(getHostNameSpan(counterIpInfo.hostname, counterIpInfo.isMain));
     row.insertCell(3).innerHTML = counterIpInfo.ip;
 }
 
 /**
- * Constructs the &lt;img&gt; tag
+ * Constructs the &lt;img&gt; element
  * 
  * @param {String} ipVersion
- * @returns {String}
+ * @returns {HTMLElement}
  */
-function getIpVersionImageTag(ipVersion){
-    
+function getIpVersionImg(ipVersion){
+    let newImageHTMLElement = document.createElement("img");
     let pathSVG = [ICONDIR, ipVersion, '.svg'].join('');
     
-    return '<img src="' + pathSVG + '" width="18" height="18">';
+    newImageHTMLElement.src = pathSVG;
+    newImageHTMLElement.width = 18;
+    newImageHTMLElement.height = 18;
+    
+    return newImageHTMLElement;
 }
 
-function getHostNameTag(hostName, isMain){
+/*
+ * Constructs the hostname element
+ * 
+ * @param {String} hostName
+ * @param {Boolean} isMain
+ * @returns {HTMLElement}
+ */
+function getHostNameSpan(hostName, isMain){
+    let newSpanHTMLElement = document.createElement("span");
+    
+    newSpanHTMLElement.innerHTML = hostName;
     if(isMain)
-        return ['<span class="mainItem">', hostName, '</span>'].join('');
-    else
-        return hostName;
+        newSpanHTMLElement.className = 'mainItem';
+    
+    return newSpanHTMLElement;
 }
 
 
@@ -66,13 +85,13 @@ function getHostNameTag(hostName, isMain){
 /**
  * Deletes all rows from the table
  * 
- * @param {type} tableElement
+ * @param {HTMLTableElement } table
  * @returns {void}
  */
-function deleteAllRows(tableElement) {
-    let rowCount = tableElement.rows.length;
+function deleteAllRows(table) {
+    let rowCount = table.rows.length;
     for (let i = rowCount - 1; i >= 0; i--) {
-        tableElement.deleteRow(i);
+        table.deleteRow(i);
     }
 }
 
