@@ -18,4 +18,4 @@ Similar plugin are [WhatIP](https://github.com/aoikeiichi/WebExt-WhatIP) or [IPv
 * Proxy info (would be possible and will probably follow)
 
 ## Screenshot
-![Screenshot](/SixIndicatorScreen1.png.png?raw=true)
+![Screenshot](/SixIndicatorScreen1.png?raw=true)
