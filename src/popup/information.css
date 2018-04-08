@@ -5,3 +5,7 @@ body{
 .mainItem{
     font-weight: bold;
 }
+
+.proxyItem{
+    font-style: italic;
+}

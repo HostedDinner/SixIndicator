@@ -15,7 +15,6 @@ Similar plugin are [WhatIP](https://github.com/aoikeiichi/WebExt-WhatIP) or [IPv
 * Indicator, if website is IPv6-Only (due to above limitation)
 * Local IP addresses
 * HTTP/HTTPS indicator (will probably follow)
-* Proxy info (would be possible and will probably follow)
 
 ## Screenshot
 ![Screenshot](/SixIndicatorScreen1.png?raw=true)

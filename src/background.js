@@ -44,9 +44,10 @@ function IpInfo(url, ip, isCached){
     }
 }
 
-function CounterIpInfo(hostname, ip, isCached, isMain){
+function CounterIpInfo(hostname, ip, isCached, isProxied, isMain){
     this.hostname = hostname;
     this.isCached = isCached;
+    this.isProxied = isProxied;
     this.isMain = isMain;
     if(ip === undefined || ip === null || ip === ''){
         this.ip = '';
@@ -55,13 +56,7 @@ function CounterIpInfo(hostname, ip, isCached, isMain){
         this.ip = ip;
         this.ipVersion = getIPVersion(ip);
     }
-    this.counter = 1;
-    /*this.incrementCounter = (isCached) => {
-        this.counter++;
-        if(this.isCached && !isCached){
-            this.isCached = false;
-        }
-    };*/
+    this.counter = 0;
 }
 
 
@@ -142,6 +137,22 @@ function getIPVersion(ipAddress){
 }
 
 
+/**
+ * Gets the tabStorage object of the specified tabId or creates it, if not found
+ * 
+ * @param {Integer} tabId
+ * @returns {TabStorage}
+ */
+function getOrCreateTabStorage(tabId){
+    let tabStorage = storageMap.get(tabId);
+    if(tabStorage === undefined){
+        tabStorage = new TabStorage();
+        storageMap.set(tabId, tabStorage);
+    }
+    
+    return tabStorage;
+}
+
 // listeners
 
 
@@ -168,21 +179,16 @@ browser.webRequest.onResponseStarted.addListener((details) => {
     let requestType = details.type;
     let isCached = details.fromCache;
     let isMain = requestType === 'main_frame';
+    let isProxied = details.proxyInfo !== undefined && details.proxyInfo !== null && details.proxyInfo.type !== 'direct';
     
     if(debugLog)
         console.log('[' + tabId + '] ' + details.requestId + ': Response started ' + url);
     
     // delete associated data, as we made a new main request
-    if(isMain){
+    if(isMain)
         storageMap.delete(tabId);
-    }
     
-    
-    let tabStorage = storageMap.get(tabId);
-    if(tabStorage === undefined){
-        tabStorage = new TabStorage();
-        storageMap.set(tabId, tabStorage);
-    }
+    let tabStorage = getOrCreateTabStorage(tabId);
     
     // check if this is the main request of this frame
     // if so, remember the infos about the IP/Host
@@ -191,24 +197,24 @@ browser.webRequest.onResponseStarted.addListener((details) => {
         tabStorage.main = mainIpInfo;
     }
     
-    
     let ipsForHostname = tabStorage.hostnames[host];
     if(ipsForHostname === undefined){
         ipsForHostname = {};
+        tabStorage.hostnames[host] = ipsForHostname;
     }
     
     let counterIpInfo = ipsForHostname[ip];
     if(counterIpInfo === undefined){
-        counterIpInfo = new CounterIpInfo(host, ip, isCached, isMain);
-    }else{
-        counterIpInfo.counter++;
-        if(counterIpInfo.isCached && !isCached){
-            counterIpInfo.isCached = false;
-        }
-        //counterIpInfo.incrementCounter(isCached);
+        counterIpInfo = new CounterIpInfo(host, ip, isCached, isProxied, isMain);
+        ipsForHostname[ip] = counterIpInfo;
     }
-    ipsForHostname[ip] = counterIpInfo;
-    tabStorage.hostnames[host] = ipsForHostname;
+    
+    counterIpInfo.counter++;
+    if(counterIpInfo.isCached && !isCached)
+        counterIpInfo.isCached = false;
+    
+    if(!counterIpInfo.isProxied && isProxied)
+        counterIpInfo.isProxied = true;
 
     updatePageAction(tabId);
     

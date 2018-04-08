@@ -42,7 +42,7 @@ function buildTable(table, tabStorage){
 function buildRow(row, counterIpInfo){
     row.insertCell(0).appendChild(getIpVersionImg(counterIpInfo.ipVersion));
     row.insertCell(1).innerHTML = '(' + counterIpInfo.counter + ')';
-    row.insertCell(2).appendChild(getHostNameSpan(counterIpInfo.hostname, counterIpInfo.isMain));
+    row.insertCell(2).appendChild(getHostNameSpan(counterIpInfo));
     row.insertCell(3).innerHTML = counterIpInfo.ip;
 }
 
@@ -59,23 +59,44 @@ function getIpVersionImg(ipVersion){
     newImageHTMLElement.src = pathSVG;
     newImageHTMLElement.width = 18;
     newImageHTMLElement.height = 18;
+    newImageHTMLElement.title = getIpVersionHelpText(ipVersion);
     
     return newImageHTMLElement;
+}
+
+/**
+ * Gets the Help (title) text for the IP Image Element
+ * 
+ * @param {String} ipVersion
+ * @returns {String}
+ */
+function getIpVersionHelpText(ipVersion){
+    let helpText = 'Unknown';
+    switch(ipVersion){
+        case 'v4': helpText = 'Loaded with IPv4'; break;
+        case 'v6': helpText = 'Loaded with IPv6'; break;
+        case 'cache': helpText = 'Loaded from cache'; break;
+    }
+    return helpText;
 }
 
 /*
  * Constructs the hostname element
  * 
- * @param {String} hostName
- * @param {Boolean} isMain
+ * @param {CounterIpInfo} counterIpInfo
  * @returns {HTMLElement}
  */
-function getHostNameSpan(hostName, isMain){
+function getHostNameSpan(counterIpInfo){
     let newSpanHTMLElement = document.createElement("span");
     
-    newSpanHTMLElement.innerHTML = hostName;
-    if(isMain)
-        newSpanHTMLElement.className = 'mainItem';
+    newSpanHTMLElement.innerHTML = counterIpInfo.hostname;
+    if(counterIpInfo.isMain)
+        newSpanHTMLElement.classList.add('mainItem');
+    
+    if(counterIpInfo.isProxied){
+        newSpanHTMLElement.classList.add('proxyItem');
+        newSpanHTMLElement.title = 'Loaded via Proxy';
+    }
     
     return newSpanHTMLElement;
 }
