@@ -7,7 +7,7 @@ const browser = window.browser || window.chrome;
 const debugLog = false;
 
 const requestFilter = {
-  urls: ["<all_urls>"]
+  urls: ['<all_urls>']
 };
 
 const IPVERSIONS = {
@@ -73,7 +73,7 @@ function queryActiveTabId(){
             if(tabs.length === 1){
                 resolve(tabs[0].id);
             }else{
-                reject("Found " + tabs.length + " Tabs, instead of 1");
+                reject('Found ' + tabs.length + ' Tabs, instead of 1');
             } 
         });
     });
@@ -158,7 +158,7 @@ function getOrCreateTabStorage(tabId){
  */
 if(debugLog){
     browser.webRequest.onBeforeRequest.addListener((details) => {
-        console.log('[' + details.tabId + '] ' + details.requestId + ": Request started " + details.url);
+        console.log('[' + details.tabId + '] ' + details.requestId + ': Request started ' + details.url);
     }, requestFilter);
 }
 
@@ -220,7 +220,7 @@ browser.webRequest.onResponseStarted.addListener((details) => {
 /*
  * Called, when a (new) tab gets activated
  * keep showing the icon on every tab and not only on tabs wich have done at least one request
- * in the case of a new tab the "?" is shown
+ * in the case of a new tab the '?' is shown
  */
 browser.tabs.onActivated.addListener((activeInfo) => {
     updatePageAction(activeInfo.tabId);
@@ -273,7 +273,7 @@ browser.runtime.onConnect.addListener((port) => {
     popupConnectionPort.onMessage.addListener((message) => {
         
         // dispatch message
-        // for example when getting somthing like message.action = "getXXX" or "requestContent"
+        // for example when getting somthing like message.action = 'getXXX' or 'requestContent'
         
         let action = message.action;
         if(action !== undefined){

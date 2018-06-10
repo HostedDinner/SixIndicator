@@ -56,7 +56,7 @@ function buildRow(row, counterIpInfo){
  * @returns {HTMLElement}
  */
 function getIpVersionImg(ipVersion){
-    let newImageHTMLElement = document.createElement("img");
+    let newImageHTMLElement = document.createElement('img');
     let pathSVG = [ICONDIR, ipVersion, '.svg'].join('');
     
     newImageHTMLElement.src = pathSVG;
@@ -76,9 +76,9 @@ function getIpVersionImg(ipVersion){
 function getIpVersionHelpText(ipVersion){
     let helpText = 'Unknown';
     switch(ipVersion){
-        case 'v4': helpText = browser.i18n.getMessage("popupTooltipLoadedIpVersion", "IPv4"); break;
-        case 'v6': helpText = browser.i18n.getMessage("popupTooltipLoadedIpVersion", "IPv6"); break;
-        case 'cache': helpText = browser.i18n.getMessage("popupTooltipLoadedCache"); break;
+        case 'v4': helpText = browser.i18n.getMessage('popupTooltipLoadedIpVersion', 'IPv4'); break;
+        case 'v6': helpText = browser.i18n.getMessage('popupTooltipLoadedIpVersion', 'IPv6'); break;
+        case 'cache': helpText = browser.i18n.getMessage('popupTooltipLoadedCache'); break;
     }
     return helpText;
 }
@@ -90,7 +90,7 @@ function getIpVersionHelpText(ipVersion){
  * @returns {HTMLElement}
  */
 function getHostNameSpan(counterIpInfo){
-    let newSpanHTMLElement = document.createElement("span");
+    let newSpanHTMLElement = document.createElement('span');
     
     newSpanHTMLElement.innerHTML = counterIpInfo.hostname;
     if(counterIpInfo.isMain)
@@ -98,7 +98,7 @@ function getHostNameSpan(counterIpInfo){
     
     if(counterIpInfo.isProxied){
         newSpanHTMLElement.classList.add('proxyItem');
-        newSpanHTMLElement.title = browser.i18n.getMessage("popupTooltipLoadedProxy");
+        newSpanHTMLElement.title = browser.i18n.getMessage('popupTooltipLoadedProxy');
     }
     
     return newSpanHTMLElement;
@@ -128,7 +128,7 @@ function setDefaultText(){
     document.getElementById('note').innerHTML = browser.i18n.getMessage('popupDefaultText');
 }
 
-document.addEventListener("DOMContentLoaded", () =>
+document.addEventListener('DOMContentLoaded', () =>
 {
     setDefaultText();
     
