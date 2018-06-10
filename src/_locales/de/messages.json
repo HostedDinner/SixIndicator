@@ -1,0 +1,49 @@
+{
+    "extensionDescription": {
+        "message": "Zeigt ein Icon an, ob IPv6 oder IPv4 für den Seitenaufruf verwendet wurde."
+    },
+    
+    "pageActionDefaultTooltip": {
+        "message": "Klicke hier für mehr Informationen"
+    },
+    
+    "pageActionTooltip": {
+        "message": "$HOSTNAME$ ($IP$)",
+        "placeholders": {
+            "hostname" : {
+                "content" : "$1",
+                "example" : "example.com"
+            },
+            "ip" : {
+                "content" : "$2",
+                "example" : "127.0.0.1"
+            }
+        }
+    },
+    
+    "pageActionCached": {
+        "message": "Cached"
+    },
+    
+    "popupDefaultText": {
+        "message": "Bitte die Seite neu laden oder anfangen zu browsen, um Informationen zu bekommen"
+    },
+    
+    "popupTooltipLoadedIpVersion": {
+        "message": "Geladen mit $VERSION$",
+        "placeholders": {
+            "version" : {
+                "content" : "$1",
+                "example" : "IPv6"
+            }
+        }
+    },
+    
+    "popupTooltipLoadedCache": {
+        "message": "Aus dem Cache geladen"
+    },
+    
+    "popupTooltipLoadedProxy": {
+        "message": "'Via Proxy geladen"
+    }
+}

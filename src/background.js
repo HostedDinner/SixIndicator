@@ -86,12 +86,9 @@ function updatePageAction(tabId){
     let tabStorage = storageMap.get(tabId);
     if(tabStorage !== undefined){
 
-        let title = '';
-        if(tabStorage.main.isCached){
-            title = [tabStorage.main.hostname, ' (Cached)'].join('');
-        }else{
-            title = [tabStorage.main.hostname, ' (', tabStorage.main.ip, ')'].join('');
-        }
+        let printedIp = tabStorage.main.isCached ? browser.i18n.getMessage('pageActionCached') : tabStorage.main.ip;
+        let title = browser.i18n.getMessage('pageActionTooltip', [tabStorage.main.hostname, printedIp]);
+        
         let pathSVG = [ICONDIR, tabStorage.main.ipVersion, '.svg'].join('');
 
         // send Message to information popup (if its connected at the moment)

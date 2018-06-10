@@ -1,6 +1,9 @@
 
 const ICONDIR = '../icons/';
 
+//browser chrome fix
+const browser = window.browser || window.chrome;
+
 /**
  * Builds the table of elements
  * 
@@ -73,9 +76,9 @@ function getIpVersionImg(ipVersion){
 function getIpVersionHelpText(ipVersion){
     let helpText = 'Unknown';
     switch(ipVersion){
-        case 'v4': helpText = 'Loaded with IPv4'; break;
-        case 'v6': helpText = 'Loaded with IPv6'; break;
-        case 'cache': helpText = 'Loaded from cache'; break;
+        case 'v4': helpText = browser.i18n.getMessage("popupTooltipLoadedIpVersion", "IPv4"); break;
+        case 'v6': helpText = browser.i18n.getMessage("popupTooltipLoadedIpVersion", "IPv6"); break;
+        case 'cache': helpText = browser.i18n.getMessage("popupTooltipLoadedCache"); break;
     }
     return helpText;
 }
@@ -95,7 +98,7 @@ function getHostNameSpan(counterIpInfo){
     
     if(counterIpInfo.isProxied){
         newSpanHTMLElement.classList.add('proxyItem');
-        newSpanHTMLElement.title = 'Loaded via Proxy';
+        newSpanHTMLElement.title = browser.i18n.getMessage("popupTooltipLoadedProxy");
     }
     
     return newSpanHTMLElement;
@@ -109,19 +112,26 @@ function getHostNameSpan(counterIpInfo){
  * @param {HTMLTableElement } table
  * @returns {void}
  */
-function deleteAllRows(table) {
+function deleteAllRows(table){
     let rowCount = table.rows.length;
     for (let i = rowCount - 1; i >= 0; i--) {
         table.deleteRow(i);
     }
 }
 
+/**
+ * Sets the default text on the popup (localized)
+ * 
+ * @returns {void}
+ */
+function setDefaultText(){
+    document.getElementById('note').innerHTML = browser.i18n.getMessage('popupDefaultText');
+}
+
 document.addEventListener("DOMContentLoaded", () =>
 {
+    setDefaultText();
     
-    //browser chrome fix
-    const browser = window.browser || window.chrome;
-
     let backgroundConnectionPort = browser.runtime.connect();
 
     backgroundConnectionPort.onMessage.addListener((message) => {

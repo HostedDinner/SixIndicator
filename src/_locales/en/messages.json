@@ -1,0 +1,57 @@
+{
+    "extensionDescription": {
+        "message": "Shows a simple icon, if IPv6 or IPv4 was used for the request of the site.",
+        "description": "Description of the extension."
+    },
+    
+    "pageActionDefaultTooltip": {
+        "message": "Click here for more information",
+        "description": "The default tooltip text of the icon, when no info is available (yet)"
+    },
+    
+    "pageActionTooltip": {
+        "message": "$HOSTNAME$ ($IP$)",
+        "description": "The tooltip text of the icon",
+        "placeholders": {
+            "hostname" : {
+                "content" : "$1",
+                "example" : "example.com"
+            },
+            "ip" : {
+                "content" : "$2",
+                "example" : "127.0.0.1"
+            }
+        }
+    },
+    
+    "pageActionCached": {
+        "message": "Cached",
+        "description": "Indicate something was cached (used instead of the ip in the tooltip, if the IP is not available)"
+    },
+    
+    "popupDefaultText": {
+        "message": "Please refresh the site or start browsing, to see information",
+        "description": "The default text on the popup, when nothing was loaded (yet)"
+    },
+    
+    "popupTooltipLoadedIpVersion": {
+        "message": "Loaded with $VERSION$",
+        "description": "The text of he tooltip, when hover on the IPv4/IPv6 icon in the popup",
+        "placeholders": {
+            "version" : {
+                "content" : "$1",
+                "example" : "IPv6"
+            }
+        }
+    },
+    
+    "popupTooltipLoadedCache": {
+        "message": "Loaded from Cache",
+        "description": "The text of he tooltip, when hover on the Cache icon in the popup"
+    },
+    
+    "popupTooltipLoadedProxy": {
+        "message": "Loaded via Proxy",
+        "description": "The text of he tooltip, when hover on an element loaded via proxy in the popup"
+    }
+}

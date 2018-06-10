@@ -3,7 +3,8 @@
     "name": "SixIndicator",
     "version": "1.1.0",
     "author": "HostedDinner",
-    "description": "Shows a simple icon, if IPv6 or IPv4 was used for the request of the site.",
+    "default_locale": "en",
+    "description": "__MSG_extensionDescription__",
     "homepage_url": "https://github.com/HostedDinner/SixIndicator",
     "icons": {
         "48": "icons/v6only.svg",
@@ -20,7 +21,7 @@
             "19": "icons/unknown.svg",
             "38": "icons/unknown.svg"
         },
-        "default_title": "Click here for more information",
+        "default_title": "__MSG_pageActionDefaultTooltip__",
         "default_popup": "popup/information.html"
     },
     "background": {
