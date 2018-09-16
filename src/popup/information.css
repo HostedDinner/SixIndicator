@@ -1,11 +1,17 @@
-body{
+body {
     margin:20px;
+    color: #000;
 }
 
-.mainItem{
+.mainItem {
     font-weight: bold;
 }
 
-.proxyItem{
+.proxyItem {
     font-style: italic;
+}
+
+.copyableItem {
+    text-decoration: underline dotted;
+    cursor: pointer;
 }

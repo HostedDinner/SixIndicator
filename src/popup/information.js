@@ -45,8 +45,8 @@ function buildTable(table, tabStorage){
 function buildRow(row, counterIpInfo){
     row.insertCell(0).appendChild(getIpVersionImg(counterIpInfo.ipVersion));
     row.insertCell(1).innerHTML = '(' + counterIpInfo.counter + ')';
-    row.insertCell(2).appendChild(getHostNameSpan(counterIpInfo));
-    row.insertCell(3).innerHTML = counterIpInfo.ip;
+    row.insertCell(2).appendChild(getHostNameElement(counterIpInfo));
+    row.insertCell(3).appendChild(getIpElement(counterIpInfo));
 }
 
 /**
@@ -89,7 +89,7 @@ function getIpVersionHelpText(ipVersion){
  * @param {CounterIpInfo} counterIpInfo
  * @returns {HTMLElement}
  */
-function getHostNameSpan(counterIpInfo){
+function getHostNameElement(counterIpInfo){
     let newSpanHTMLElement = document.createElement('span');
     
     newSpanHTMLElement.innerHTML = counterIpInfo.hostname;
@@ -104,7 +104,28 @@ function getHostNameSpan(counterIpInfo){
     return newSpanHTMLElement;
 }
 
-
+/**
+ * Constructs the ip element
+ * 
+ * @param {CounterIpInfo} counterIpInfo
+ * @returns {HTMLElement}
+ */
+function getIpElement(counterIpInfo){
+    
+    let newSpanElement = document.createElement('span');
+    newSpanElement.innerHTML = counterIpInfo.ip;
+    
+    if(navigator.clipboard !== undefined && 'function' === typeof navigator.clipboard.writeText) {
+        newSpanElement.title = browser.i18n.getMessage('popupTooltipCopyIp');
+        newSpanElement.dataset.ip = counterIpInfo.ip;
+        newSpanElement.classList.add('copyableItem');
+        newSpanElement.addEventListener('click', function() {
+            navigator.clipboard.writeText(this.dataset.ip);
+        });
+    }
+    
+    return newSpanElement;
+}
 
 /**
  * Deletes all rows from the table

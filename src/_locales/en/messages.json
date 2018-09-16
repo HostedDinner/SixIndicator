@@ -36,7 +36,7 @@
     
     "popupTooltipLoadedIpVersion": {
         "message": "Loaded with $VERSION$",
-        "description": "The text of he tooltip, when hover on the IPv4/IPv6 icon in the popup",
+        "description": "The text of the tooltip, when hover on the IPv4/IPv6 icon in the popup",
         "placeholders": {
             "version" : {
                 "content" : "$1",
@@ -47,11 +47,16 @@
     
     "popupTooltipLoadedCache": {
         "message": "Loaded from Cache",
-        "description": "The text of he tooltip, when hover on the Cache icon in the popup"
+        "description": "The text of the tooltip, when hover on the Cache icon in the popup"
     },
     
     "popupTooltipLoadedProxy": {
         "message": "Loaded via Proxy",
-        "description": "The text of he tooltip, when hover on an element loaded via proxy in the popup"
+        "description": "The text of the tooltip, when hover on an element loaded via proxy in the popup"
+    },
+    
+    "popupTooltipCopyIp": {
+        "message": "Click here to copy the IP to the clipboard",
+        "description": "The text of the tooltip, when hover of the ip element"
     }
 }

@@ -45,5 +45,9 @@
     
     "popupTooltipLoadedProxy": {
         "message": "'Via Proxy geladen"
+    },
+    
+    "popupTooltipCopyIp": {
+        "message": "Klicke hier, um die IP in die Zwischenablage zu kopieren"
     }
 }
