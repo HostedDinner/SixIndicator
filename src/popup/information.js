@@ -43,8 +43,8 @@ function buildTable(table, tabStorage){
  * @returns {void}
  */
 function buildRow(row, counterIpInfo){
-    row.insertCell(0).appendChild(getIpVersionImg(counterIpInfo.ipVersion));
-    row.insertCell(1).innerHTML = '(' + counterIpInfo.counter + ')';
+    row.insertCell(0).appendChild(getIpVersionElement(counterIpInfo.ipVersion));
+    row.insertCell(1).appendChild(getCounterElement(counterIpInfo));
     row.insertCell(2).appendChild(getHostNameElement(counterIpInfo));
     row.insertCell(3).appendChild(getIpElement(counterIpInfo));
 }
@@ -55,7 +55,7 @@ function buildRow(row, counterIpInfo){
  * @param {String} ipVersion
  * @returns {HTMLElement}
  */
-function getIpVersionImg(ipVersion){
+function getIpVersionElement(ipVersion){
     let newImageHTMLElement = document.createElement('img');
     let pathSVG = [ICONDIR, ipVersion, '.svg'].join('');
     
@@ -83,6 +83,16 @@ function getIpVersionHelpText(ipVersion){
     return helpText;
 }
 
+/**
+ * Constructs the counter element
+ * 
+ * @param {CounterIpInfo} counterIpInfo
+ * @returns {HTMLElement}
+ */
+function getCounterElement(counterIpInfo){
+    return document.createTextNode('(' + counterIpInfo.counter + ')');
+}
+
 /*
  * Constructs the hostname element
  * 
@@ -92,7 +102,7 @@ function getIpVersionHelpText(ipVersion){
 function getHostNameElement(counterIpInfo){
     let newSpanHTMLElement = document.createElement('span');
     
-    newSpanHTMLElement.innerHTML = counterIpInfo.hostname;
+    newSpanHTMLElement.appendChild(document.createTextNode(counterIpInfo.hostname));
     if(counterIpInfo.isMain)
         newSpanHTMLElement.classList.add('mainItem');
     
@@ -113,7 +123,7 @@ function getHostNameElement(counterIpInfo){
 function getIpElement(counterIpInfo){
     
     let newSpanElement = document.createElement('span');
-    newSpanElement.innerHTML = counterIpInfo.ip;
+    newSpanElement.appendChild(document.createTextNode(counterIpInfo.ip));
     
     if(navigator.clipboard !== undefined && 'function' === typeof navigator.clipboard.writeText) {
         newSpanElement.title = browser.i18n.getMessage('popupTooltipCopyIp');
