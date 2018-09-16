@@ -13,8 +13,7 @@
     "permissions": [
         "tabs",
         "webRequest",
-        "<all_urls>",
-        "clipboardWrite"
+        "<all_urls>"
     ],
     "page_action": {
         "browser_style": true,
