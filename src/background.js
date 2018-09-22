@@ -89,7 +89,7 @@ function updatePageAction(tabId){
         let printedIp = tabStorage.main.isCached ? browser.i18n.getMessage('pageActionCached') : tabStorage.main.ip;
         let title = browser.i18n.getMessage('pageActionTooltip', [tabStorage.main.hostname, printedIp]);
         
-        let pathSVG = [ICONDIR, tabStorage.main.ipVersion, '.svg'].join('');
+        let path = [ICONDIR, tabStorage.main.ipVersion, '.svg'].join('');
 
         // send Message to information popup (if its connected at the moment)
         if(popupConnectionPort !== null && tabId === popupConnectionTabId)
@@ -102,10 +102,7 @@ function updatePageAction(tabId){
         });
         browser.pageAction.setIcon({
             tabId,
-            path: {
-                '19': pathSVG,
-                '38': pathSVG
-            }
+            path
         });
     }
 

@@ -57,9 +57,9 @@ function buildRow(row, counterIpInfo){
  */
 function getIpVersionElement(ipVersion){
     let newImageHTMLElement = document.createElement('img');
-    let pathSVG = [ICONDIR, ipVersion, '.svg'].join('');
+    let svgPath = [ICONDIR, ipVersion, '.svg'].join('');
     
-    newImageHTMLElement.src = pathSVG;
+    newImageHTMLElement.src = svgPath;
     newImageHTMLElement.width = 18;
     newImageHTMLElement.height = 18;
     newImageHTMLElement.title = getIpVersionHelpText(ipVersion);
