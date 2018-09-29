@@ -17,6 +17,12 @@ const IPVERSIONS = {
     CACHE: 'cache'
 };
 
+const SECUREMODE = {
+    SECURE: 'secure',
+    UNSECURE: 'unsecure',
+    MIXED: 'mixed'
+}
+
 const ICONDIR = 'icons/';
 
 let storageMap = new Map();
@@ -44,10 +50,11 @@ function IpInfo(url, ip, isCached){
     }
 }
 
-function CounterIpInfo(hostname, ip, isCached, isProxied, isMain){
+function CounterIpInfo(hostname, ip, isCached, isProxied, secureMode, isMain){
     this.hostname = hostname;
     this.isCached = isCached;
     this.isProxied = isProxied;
+    this.secureMode = secureMode;
     this.isMain = isMain;
     if(ip === undefined || ip === null || ip === ''){
         this.ip = '';
@@ -130,6 +137,23 @@ function getIPVersion(ipAddress){
     return version;
 }
 
+/**
+ * Detmines, if the given protocol is a secure protocol (whitelist)
+ * 
+ * @param {String} protocol
+ * @returns {String}
+ */
+function getSecureMode(protocol) {
+    let secureMode = SECUREMODE.UNSECURE;
+    
+    if(protocol !== undefined){
+        if(protocol === 'https:' || protocol === 'ftps:' || protocol === 'ssh:' || protocol === 'ircs:')
+            secureMode = SECUREMODE.SECURE;
+    }
+    
+    return secureMode;
+}
+
 
 /**
  * Gets the tabStorage object of the specified tabId or creates it, if not found
@@ -166,14 +190,17 @@ browser.webRequest.onResponseStarted.addListener((details) => {
     if(details.tabId === -1)
         return;
     
+    let urlObj = new URL(details.url);
+    
     let tabId = details.tabId;
     let ip = details.ip || '';
-    let host = new URL(details.url).hostname;
+    let host = urlObj.hostname;
     let url = details.url;
     let requestType = details.type;
     let isCached = details.fromCache;
     let isMain = requestType === 'main_frame';
     let isProxied = details.proxyInfo !== undefined && details.proxyInfo !== null && details.proxyInfo.type !== 'direct';
+    let secureMode = getSecureMode(urlObj.protocol);
     
     if(debugLog)
         console.log('[' + tabId + '] ' + details.requestId + ': Response started ' + url);
@@ -199,7 +226,7 @@ browser.webRequest.onResponseStarted.addListener((details) => {
     
     let counterIpInfo = ipsForHostname[ip];
     if(counterIpInfo === undefined){
-        counterIpInfo = new CounterIpInfo(host, ip, isCached, isProxied, isMain);
+        counterIpInfo = new CounterIpInfo(host, ip, isCached, isProxied, secureMode, isMain);
         ipsForHostname[ip] = counterIpInfo;
     }
     
@@ -209,6 +236,9 @@ browser.webRequest.onResponseStarted.addListener((details) => {
     
     if(!counterIpInfo.isProxied && isProxied)
         counterIpInfo.isProxied = true;
+    
+    if(counterIpInfo.secureMode !== secureMode && counterIpInfo.secureMode !== SECUREMODE.MIXED)
+        counterIpInfo.secureMode = SECUREMODE.MIXED;
 
     updatePageAction(tabId);
     

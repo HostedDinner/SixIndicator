@@ -57,6 +57,21 @@
     
     "popupTooltipCopyIp": {
         "message": "Click here to copy the IP to the clipboard",
-        "description": "The text of the tooltip, when hover of the ip element"
+        "description": "The text of the tooltip, when hover on the ip element"
+    },
+    
+    "popupTooltipSecureConnection": {
+        "message": "Secure connections",
+        "description": "The text of the tooltip, when hover on the secure icon in the popup"
+    },
+    
+    "popupTooltipUnsecureConnection": {
+        "message": "Unsecure connections",
+        "description": "The text of the tooltip, when hover on the unsecure icon in the popup"
+    },
+    
+    "popupTooltipMixedConnection": {
+        "message": "Secure and unsecure connections",
+        "description": "The text of the tooltip, when hover on the mixed (Security) icon in the popup"
     }
 }

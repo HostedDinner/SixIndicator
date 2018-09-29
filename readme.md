@@ -14,7 +14,7 @@ Similar plugin are [WhatIP](https://github.com/aoikeiichi/WebExt-WhatIP) or [IPv
 * Looking up other IP addresses for used domains. Showing only the Ip address, which was used
 * Indicator, if website is IPv6-Only (due to above limitation)
 * Local IP addresses
-* HTTP/HTTPS indicator (will probably follow)
 
 ## Screenshot
-![Screenshot](/SixIndicatorScreen1.png?raw=true)
+![Screenshot Popup](/SixIndicatorScreen1.png?raw=true)
+![Screenshot Icons](/SixIndicatorScreen2.png?raw=true)

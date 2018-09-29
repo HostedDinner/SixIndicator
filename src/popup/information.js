@@ -44,9 +44,10 @@ function buildTable(table, tabStorage){
  */
 function buildRow(row, counterIpInfo){
     row.insertCell(0).appendChild(getIpVersionElement(counterIpInfo.ipVersion));
-    row.insertCell(1).appendChild(getCounterElement(counterIpInfo));
-    row.insertCell(2).appendChild(getHostNameElement(counterIpInfo));
-    row.insertCell(3).appendChild(getIpElement(counterIpInfo));
+    row.insertCell(1).appendChild(getSecureElement(counterIpInfo));
+    row.insertCell(2).appendChild(getCounterElement(counterIpInfo));
+    row.insertCell(3).appendChild(getHostNameElement(counterIpInfo));
+    row.insertCell(4).appendChild(getIpElement(counterIpInfo));
 }
 
 /**
@@ -91,6 +92,40 @@ function getIpVersionHelpText(ipVersion){
  */
 function getCounterElement(counterIpInfo){
     return document.createTextNode('(' + counterIpInfo.counter + ')');
+}
+
+/**
+ * Constructs the Secure element
+ * 
+ * @param {CounterIpInfo} counterIpInfo
+ * @returns {HTMLElement}
+ */
+function getSecureElement(counterIpInfo){    
+    let newImageHTMLElement = document.createElement('img');
+    let svgPath = [ICONDIR, counterIpInfo.secureMode, '.svg'].join('');
+    
+    newImageHTMLElement.src = svgPath;
+    newImageHTMLElement.width = 18;
+    newImageHTMLElement.height = 18;
+    newImageHTMLElement.title = getSecureHelpText(counterIpInfo.secureMode);
+    
+    return newImageHTMLElement;
+}
+
+/**
+ * Gets the Help (title) text for the Secure Image Element
+ * 
+ * @param {String} secureMode
+ * @returns {String}
+ */
+function getSecureHelpText(secureMode){
+    let helpText = 'Unknown';
+    switch(secureMode){
+        case 'secure': helpText = browser.i18n.getMessage('popupTooltipSecureConnection'); break;
+        case 'unsecure': helpText = browser.i18n.getMessage('popupTooltipUnsecureConnection'); break;
+        case 'mixed': helpText = browser.i18n.getMessage('popupTooltipMixedConnection'); break;
+    }
+    return helpText;
 }
 
 /*
