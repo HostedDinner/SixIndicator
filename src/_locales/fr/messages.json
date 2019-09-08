@@ -1,0 +1,77 @@
+{
+    "extensionDescription": {
+        "message": "Affiche une icône simple, si IPv6 ou IPv4 a été utilisé.",
+        "description": "Description de l'extension."
+    },
+    
+    "pageActionDefaultTooltip": {
+        "message": "Cliquez ici pour plus d'informations",
+        "description": "Le texte par défaut de l'icône si aucune info."
+    },
+    
+    "pageActionTooltip": {
+        "message": "$HOSTNAME$ ($IP$)",
+        "description": "Le texte de l'icône",
+        "placeholders": {
+            "hostname" : {
+                "content" : "$1",
+                "example" : "example.com"
+            },
+            "ip" : {
+                "content" : "$2",
+                "example" : "127.0.0.1"
+            }
+        }
+    },
+    
+    "pageActionCached": {
+        "message": "Cache",
+        "description": "Indiquer que quelque chose a été mis en cache."
+    },
+    
+    "popupDefaultText": {
+        "message": "S'il vous plaît rafraîchir le site pour obtenir des infos sur l'ip.",
+        "description": "Le texte par défaut sur la popup si non chargé."
+    },
+    
+    "popupTooltipLoadedIpVersion": {
+        "message": "Chargé avec $VERSION$",
+        "description": "Le texte lorsque la souris sur l'icône IPv4/IPv6.",
+        "placeholders": {
+            "version" : {
+                "content" : "$1",
+                "example" : "IPv6"
+            }
+        }
+    },
+    
+    "popupTooltipLoadedCache": {
+        "message": "Charger du cache",
+        "description": "Le texte lorsque la souris sur l'icône du cache."
+    },
+    
+    "popupTooltipLoadedProxy": {
+        "message": "Chargé via Proxy",
+        "description": "Le texte lorsque la souris sur un element chargé via proxy."
+    },
+    
+    "popupTooltipCopyIp": {
+        "message": "Cliquez pour copier l'IP dans le presse-papiers",
+        "description": "Le texte lorsque la souris sur une ip"
+    },
+    
+    "popupTooltipSecureConnection": {
+        "message": "Connexions sécurisées",
+        "description": "Le texte lorsque la souris sur l'icon securisé"
+    },
+    
+    "popupTooltipUnsecureConnection": {
+        "message": "Connexions non sécurisées",
+        "description": "Le texte lorsque la souris sur l'icon non securisé"
+    },
+    
+    "popupTooltipMixedConnection": {
+        "message": "Connexions sécurisées et non sécurisées",
+        "description": "Le texte lorsque la souris sur l'icon mixed content"
+    }
+}
