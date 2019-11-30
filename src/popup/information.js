@@ -191,7 +191,7 @@ function deleteAllRows(table){
  * @returns {void}
  */
 function setDefaultText(){
-    document.getElementById('note').innerHTML = browser.i18n.getMessage('popupDefaultText');
+    document.getElementById('note').textContent = browser.i18n.getMessage('popupDefaultText');
 }
 
 document.addEventListener('DOMContentLoaded', () =>
