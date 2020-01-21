@@ -7,7 +7,7 @@ const browser = window.browser || window.chrome;
 const debugLog = false;
 
 const requestFilter = {
-  urls: ['<all_urls>']
+    urls: ['<all_urls>']
 };
 
 const IPVERSIONS = {
@@ -81,7 +81,7 @@ function queryActiveTabId(){
                 resolve(tabs[0].id);
             }else{
                 reject('Found ' + tabs.length + ' Tabs, instead of 1');
-            } 
+            }
         });
     });
 }
@@ -89,19 +89,19 @@ function queryActiveTabId(){
 function updatePageAction(tabId){
     if(tabId === -1)
         return;
-    
+
     let tabStorage = storageMap.get(tabId);
     if(tabStorage !== undefined){
 
         let printedIp = tabStorage.main.isCached ? browser.i18n.getMessage('pageActionCached') : tabStorage.main.ip;
         let title = browser.i18n.getMessage('pageActionTooltip', [tabStorage.main.hostname, printedIp]);
-        
+
         let path = [ICONDIR, tabStorage.main.ipVersion, '.svg'].join('');
 
         // send Message to information popup (if its connected at the moment)
         if(popupConnectionPort !== null && tabId === popupConnectionTabId)
             popupConnectionPort.postMessage({action: 'updateContent', tabStorage});
-            
+
         // sets the PageAction title and icon accordingly
         browser.pageAction.setTitle({
             tabId,
@@ -125,39 +125,43 @@ function updatePageAction(tabId){
  */
 function getIPVersion(ipAddress){
     let version = IPVERSIONS.UNKN;
-    
+
     if(ipAddress !== null){
         if(ipAddress.indexOf(':') !== -1){
-            version = IPVERSIONS.IPV6;
+            if (ipAddress.startsWith('64:ff9b::')){
+                version = IPVERSIONS.IPV4;
+            }else{
+                version = IPVERSIONS.IPV6;
+            }
         }else if(ipAddress.indexOf('.') !== -1){
             version = IPVERSIONS.IPV4;
         }
     }
-    
+
     return version;
 }
 
 /**
  * Detmines, if the given protocol is a secure protocol (whitelist)
- * 
+ *
  * @param {String} protocol
  * @returns {String}
  */
 function getSecureMode(protocol) {
     let secureMode = SECUREMODE.UNSECURE;
-    
+
     if(protocol !== undefined){
         if(protocol === 'https:' || protocol === 'ftps:' || protocol === 'ssh:' || protocol === 'ircs:')
             secureMode = SECUREMODE.SECURE;
     }
-    
+
     return secureMode;
 }
 
 
 /**
  * Gets the tabStorage object of the specified tabId or creates it, if not found
- * 
+ *
  * @param {Integer} tabId
  * @returns {TabStorage}
  */
@@ -167,7 +171,7 @@ function getOrCreateTabStorage(tabId){
         tabStorage = new TabStorage();
         storageMap.set(tabId, tabStorage);
     }
-    
+
     return tabStorage;
 }
 
@@ -189,9 +193,9 @@ if(debugLog){
 browser.webRequest.onResponseStarted.addListener((details) => {
     if(details.tabId === -1)
         return;
-    
+
     let urlObj = new URL(details.url);
-    
+
     let tabId = details.tabId;
     let ip = details.ip || '';
     let host = urlObj.hostname;
@@ -201,47 +205,47 @@ browser.webRequest.onResponseStarted.addListener((details) => {
     let isMain = requestType === 'main_frame';
     let isProxied = details.proxyInfo !== undefined && details.proxyInfo !== null && details.proxyInfo.type !== 'direct';
     let secureMode = getSecureMode(urlObj.protocol);
-    
+
     if(debugLog)
         console.log('[' + tabId + '] ' + details.requestId + ': Response started ' + url);
-    
+
     // delete associated data, as we made a new main request
     if(isMain)
         storageMap.delete(tabId);
-    
+
     let tabStorage = getOrCreateTabStorage(tabId);
-    
+
     // check if this is the main request of this frame
     // if so, remember the infos about the IP/Host
     if(isMain){
         let mainIpInfo = new IpInfo(url, ip, isCached);
         tabStorage.main = mainIpInfo;
     }
-    
+
     let ipsForHostname = tabStorage.hostnames[host];
     if(ipsForHostname === undefined){
         ipsForHostname = {};
         tabStorage.hostnames[host] = ipsForHostname;
     }
-    
+
     let counterIpInfo = ipsForHostname[ip];
     if(counterIpInfo === undefined){
         counterIpInfo = new CounterIpInfo(host, ip, isCached, isProxied, secureMode, isMain);
         ipsForHostname[ip] = counterIpInfo;
     }
-    
+
     counterIpInfo.counter++;
     if(counterIpInfo.isCached && !isCached)
         counterIpInfo.isCached = false;
-    
+
     if(!counterIpInfo.isProxied && isProxied)
         counterIpInfo.isProxied = true;
-    
+
     if(counterIpInfo.secureMode !== secureMode && counterIpInfo.secureMode !== SECUREMODE.MIXED)
         counterIpInfo.secureMode = SECUREMODE.MIXED;
 
     updatePageAction(tabId);
-    
+
 }, requestFilter);
 
 /*
@@ -282,7 +286,7 @@ browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
     if(changeInfo.status !== undefined && changeInfo.status === 'complete')
         browser.pageAction.show(tabId);
-    
+
     // clean up our data, when a tab itself cleans up
     if(changeInfo.discarded !== undefined && changeInfo.discarded === true)
         storageMap.delete(tabInfo.id);
@@ -296,12 +300,12 @@ browser.runtime.onConnect.addListener((port) => {
     popupConnectionPort = port;
     if(debugLog)
         console.log('Page has connected');
-    
+
     popupConnectionPort.onMessage.addListener((message) => {
-        
+
         // dispatch message
         // for example when getting somthing like message.action = 'getXXX' or 'requestContent'
-        
+
         let action = message.action;
         if(action !== undefined){
             switch(action){
@@ -314,8 +318,8 @@ browser.runtime.onConnect.addListener((port) => {
             }
         }
     });
-    
-    
+
+
     popupConnectionPort.onDisconnect.addListener((port) => {
         popupConnectionPort = null;
         popupConnectionTabId = null;
