@@ -44,7 +44,7 @@
     },
     
     "popupTooltipLoadedProxy": {
-        "message": "'Via Proxy geladen"
+        "message": "Via Proxy geladen"
     },
     
     "popupTooltipCopyIp": {
@@ -52,14 +52,14 @@
     },
     
     "popupTooltipSecureConnection": {
-        "message": "Sichere Verbinungen"
+        "message": "Sichere Verbindungen"
     },
     
     "popupTooltipUnsecureConnection": {
-        "message": "Unsichere Verbinungen"
+        "message": "Unsichere Verbindungen"
     },
     
     "popupTooltipMixedConnection": {
-        "message": "Sichere und unsichere Verbinungen"
+        "message": "Sichere und unsichere Verbindungen"
     }
 }
