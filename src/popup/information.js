@@ -79,6 +79,7 @@ function getIpVersionHelpText(ipVersion){
     switch(ipVersion){
         case 'v4': helpText = browser.i18n.getMessage('popupTooltipLoadedIpVersion', 'IPv4'); break;
         case 'v6': helpText = browser.i18n.getMessage('popupTooltipLoadedIpVersion', 'IPv6'); break;
+        case 'v6to4': helpText = browser.i18n.getMessage('popupTooltipLoadedNAT64'); break;
         case 'cache': helpText = browser.i18n.getMessage('popupTooltipLoadedCache'); break;
     }
     return helpText;

@@ -45,6 +45,10 @@
         }
     },
     
+    "popupTooltipLoadedNAT64": {
+        "message": "Chargé via NAT64"
+    },
+    
     "popupTooltipLoadedCache": {
         "message": "Charger du cache",
         "description": "Le texte lorsque la souris sur l'icône du cache."

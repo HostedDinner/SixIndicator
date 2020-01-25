@@ -45,6 +45,11 @@
         }
     },
     
+    "popupTooltipLoadedNAT64": {
+        "message": "Loaded via NAT64",
+        "description": "The text of the tooltip, when hover on the IP Icon in the popup and NAT64 was detected"
+    },
+    
     "popupTooltipLoadedCache": {
         "message": "Loaded from Cache",
         "description": "The text of the tooltip, when hover on the Cache icon in the popup"

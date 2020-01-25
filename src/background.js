@@ -7,12 +7,13 @@ const browser = window.browser || window.chrome;
 const debugLog = false;
 
 const requestFilter = {
-  urls: ['<all_urls>']
+    urls: ['<all_urls>']
 };
 
 const IPVERSIONS = {
     IPV4: 'v4',
     IPV6: 'v6',
+    IPV6TO4: 'v6to4',
     UNKN: 'unknown',
     CACHE: 'cache'
 };
@@ -21,7 +22,7 @@ const SECUREMODE = {
     SECURE: 'secure',
     UNSECURE: 'unsecure',
     MIXED: 'mixed'
-}
+};
 
 const ICONDIR = 'icons/';
 
@@ -128,7 +129,11 @@ function getIPVersion(ipAddress){
     
     if(ipAddress !== null){
         if(ipAddress.indexOf(':') !== -1){
-            version = IPVERSIONS.IPV6;
+            if(ipAddress.startsWith('64:ff9b::')){ // TODO make this configurable
+                version = IPVERSIONS.IPV6TO4;
+            }else{
+                version = IPVERSIONS.IPV6;
+            }
         }else if(ipAddress.indexOf('.') !== -1){
             version = IPVERSIONS.IPV4;
         }

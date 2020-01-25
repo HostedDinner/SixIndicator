@@ -39,6 +39,10 @@
         }
     },
     
+    "popupTooltipLoadedNAT64": {
+        "message": "Geladen via NAT64"
+    },
+    
     "popupTooltipLoadedCache": {
         "message": "Aus dem Cache geladen"
     },
