@@ -143,7 +143,7 @@ function getIPVersion(ipAddress){
 }
 
 /**
- * Detmines, if the given protocol is a secure protocol (whitelist)
+ * Determines, if the given protocol is a secure protocol (whitelist)
  * 
  * @param {String} protocol
  * @returns {String}
@@ -152,7 +152,7 @@ function getSecureMode(protocol) {
     let secureMode = SECUREMODE.UNSECURE;
     
     if(protocol !== undefined){
-        if(protocol === 'https:' || protocol === 'ftps:' || protocol === 'ssh:' || protocol === 'ircs:')
+        if(protocol === 'https:' || protocol === 'ftps:' || protocol === 'ssh:' || protocol === 'ircs:' || protocol === 'wss:')
             secureMode = SECUREMODE.SECURE;
     }
     
