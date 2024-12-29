@@ -1,29 +1,23 @@
 {
-    "manifest_version": 2,
-    "name": "SixIndicator",
-    "version": "1.3.0",
-    "author": "HostedDinner",
-    "default_locale": "en",
-    "description": "__MSG_extensionDescription__",
-    "homepage_url": "https://github.com/HostedDinner/SixIndicator",
-    "icons": {
-        "48": "icons/v6only.svg",
-        "96": "icons/v6only.svg"
-    },
-    "permissions": [
-        "tabs",
-        "webRequest",
-        "<all_urls>"
-    ],
-    "page_action": {
-        "browser_style": true,
-        "default_icon": "icons/unknown.svg",
-        "default_title": "__MSG_pageActionDefaultTooltip__",
-        "default_popup": "popup/information.html"
-    },
-    "background": {
-        "scripts": [
-            "background.js"
-        ]
-    }
+  "manifest_version": 2,
+  "name": "SixIndicator",
+  "version": "1.3.0",
+  "author": "HostedDinner",
+  "default_locale": "en",
+  "description": "__MSG_extensionDescription__",
+  "homepage_url": "https://github.com/HostedDinner/SixIndicator",
+  "icons": {
+    "48": "icons/v6only.svg",
+    "96": "icons/v6only.svg"
+  },
+  "permissions": ["tabs", "webRequest", "<all_urls>"],
+  "page_action": {
+    "browser_style": true,
+    "default_icon": "icons/unknown.svg",
+    "default_title": "__MSG_pageActionDefaultTooltip__",
+    "default_popup": "popup/information.html"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  }
 }

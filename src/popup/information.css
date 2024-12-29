@@ -1,17 +1,17 @@
 body {
-    margin:20px;
-    color: #000;
+  margin: 20px;
+  color: #000;
 }
 
 .mainItem {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .proxyItem {
-    font-style: italic;
+  font-style: italic;
 }
 
 .copyableItem {
-    text-decoration: underline dotted;
-    cursor: pointer;
+  text-decoration: underline dotted;
+  cursor: pointer;
 }
