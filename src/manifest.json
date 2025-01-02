@@ -18,6 +18,7 @@
     "default_popup": "popup/information.html"
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.js"],
+    "type": "module"
   }
 }

@@ -3,10 +3,21 @@
   "version": "1.3.0",
   "packageManager": "yarn@4.5.3",
   "scripts": {
-    "build": "web-ext build",
-    "dev": "web-ext build --filename '{name}-{version}-snapshot.zip' --overwrite-dest"
+    "clean": "rimraf build",
+    "copy": "copyfiles -u 1 -e \"**/*.js\" -e \"**/*.ts\" \"src/**/*\" build",
+    "build:ts": "tsc",
+    "build:webext": "web-ext build",
+    "dev:webext": "web-ext build --filename '{name}-{version}-snapshot.zip' --overwrite-dest",
+    "build": "yarn clean && yarn copy && yarn build:ts && yarn build:webext",
+    "dev": "yarn clean && yarn copy && yarn build:ts && yarn dev:webext"
   },
   "devDependencies": {
+    "@tsconfig/recommended": "^1.0.8",
+    "@types/chrome": "^0.0.287",
+    "@types/copyfiles": "^2",
+    "copyfiles": "^2.4.1",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.2",
     "web-ext": "^8.3.0"
   }
 }

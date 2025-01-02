@@ -1,4 +1,4 @@
 export default {
-  sourceDir: "src/",
+  sourceDir: "build/",
   artifactsDir: "dist/",
 };
