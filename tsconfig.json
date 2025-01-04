@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./build/",
     "noImplicitAny": true,
-    "module": "es2022",
+    "module": "preserve",
     "target": "es2023",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,

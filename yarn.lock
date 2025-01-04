@@ -252,6 +252,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/firefox-webext-browser@npm:^120.0.4":
+  version: 120.0.4
+  resolution: "@types/firefox-webext-browser@npm:120.0.4"
+  checksum: 10c0/75982a9c2dfdec8808a5a2356ff11e221d7891aebdb8e5c74cfcf6ac2ccd260dfd4b6b79ec99c214e17d1e6b1a6ff391a8dd0b569ba822c22246b4e6b5aaea34
+  languageName: node
+  linkType: hard
+
 "@types/har-format@npm:*":
   version: 1.2.16
   resolution: "@types/har-format@npm:1.2.16"
@@ -3053,6 +3060,7 @@ __metadata:
     "@tsconfig/recommended": "npm:^1.0.8"
     "@types/chrome": "npm:^0.0.287"
     "@types/copyfiles": "npm:^2"
+    "@types/firefox-webext-browser": "npm:^120.0.4"
     copyfiles: "npm:^2.4.1"
     rimraf: "npm:^6.0.1"
     typescript: "npm:^5.7.2"
