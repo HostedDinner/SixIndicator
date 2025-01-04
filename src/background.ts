@@ -1,8 +1,7 @@
 import type {
   ITabStorage,
-  ICounterIpInfo,
-  PortMessage,
   IIpInfo,
+  PortMessage,
   UpdateContentPortMessage,
   WebResponseCacheDetailsWithProxyInfo,
 } from "./types/types";
@@ -19,60 +18,43 @@ const requestFilter = {
   urls: ["<all_urls>"],
 };
 
-const IPVERSIONS = {
-  IPV4: "v4",
-  IPV6: "v6",
-  IPV6TO4: "v6to4",
-  UNKN: "unknown",
-  CACHE: "cache",
-};
+enum IpVersion {
+  IPV4 = "v4",
+  IPV6 = "v6",
+  IPV6TO4 = "v6to4",
+  UNKN = "unknown",
+  CACHE = "cache",
+}
 
-const SECUREMODE = {
-  SECURE: "secure",
-  UNSECURE: "unsecure",
-  MIXED: "mixed",
-};
+enum SecureMode {
+  SECURE = "secure",
+  UNSECURE = "unsecure",
+  MIXED = "mixed",
+}
 
 const ICONDIR = "icons/";
 
-const storageMap = new Map<number, ITabStorage>();
+const storageMap: Partial<Record<number, ITabStorage>> = {};
 let popupConnectionPort: chrome.runtime.Port | null = null;
 let popupConnectionTabId: number | null = null;
 
 // types
 
 class TabStorage implements ITabStorage {
-  hostnames: Record<string, Record<string, ICounterIpInfo>>;
-  main: IIpInfo;
+  entries: IIpInfo[];
+  mainIp?: string;
+  mainHostname?: string;
 
   constructor() {
-    this.hostnames = {};
-    this.main = new IpInfo("", "", false);
+    this.entries = [];
   }
 }
 
 class IpInfo implements IIpInfo {
-  url: string;
   hostname: string;
-  isCached: boolean;
   ip: string;
   ipVersion: string;
-
-  constructor(url: string, ip: string, isCached: boolean) {
-    this.url = url;
-    this.hostname = url !== "" ? new URL(url).hostname : "";
-    this.isCached = isCached;
-    if (ip === undefined || ip === null || ip === "") {
-      this.ip = "";
-      this.ipVersion = isCached ? IPVERSIONS.CACHE : IPVERSIONS.UNKN;
-    } else {
-      this.ip = ip;
-      this.ipVersion = getIPVersion(ip);
-    }
-  }
-}
-
-class CounterIpInfo extends IpInfo implements ICounterIpInfo {
+  isCached: boolean;
   isProxied: boolean;
   secureMode: string;
   isMain: boolean;
@@ -86,8 +68,16 @@ class CounterIpInfo extends IpInfo implements ICounterIpInfo {
     secureMode: string,
     isMain: boolean
   ) {
-    super("", ip, isCached);
     this.hostname = hostname;
+    if (ip === "") {
+      this.ip = "";
+      this.ipVersion = isCached ? IpVersion.CACHE : IpVersion.UNKN;
+    } else {
+      this.ip = ip;
+      this.ipVersion = getIPVersion(ip);
+    }
+
+    this.isCached = isCached;
     this.isProxied = isProxied;
     this.secureMode = secureMode;
     this.isMain = isMain;
@@ -117,40 +107,49 @@ function updatePageAction(tabId: number) {
     return;
   }
 
-  const tabStorage = storageMap.get(tabId);
-  if (tabStorage) {
-    const printedIp = tabStorage.main.isCached
-      ? _browser.i18n.getMessage("pageActionCached")
-      : tabStorage.main.ip;
-    const title = _browser.i18n.getMessage("pageActionTooltip", [
-      tabStorage.main.hostname,
-      printedIp,
-    ]);
+  const tabStorage = storageMap[tabId];
+  const mainHostname = tabStorage?.mainHostname;
+  const mainIp = tabStorage?.mainIp;
 
-    const path = [ICONDIR, tabStorage.main.ipVersion, ".svg"].join("");
+  if (tabStorage && mainHostname && mainIp) {
+    const ipInfo = tabStorage.entries.find((e) => {
+      return e.hostname === mainHostname && e.ip === mainIp;
+    });
 
-    // send Message to information popup (if its connected at the moment)
-    if (popupConnectionPort !== null && tabId === popupConnectionTabId) {
-      const message: UpdateContentPortMessage = {
-        action: "updateContent",
-        tabStorage,
-      };
-      popupConnectionPort.postMessage(message);
+    if (ipInfo) {
+      const printedIp = ipInfo.isCached
+        ? _browser.i18n.getMessage("pageActionCached")
+        : ipInfo.ip;
+      const title = _browser.i18n.getMessage("pageActionTooltip", [
+        ipInfo.hostname,
+        printedIp,
+      ]);
+
+      const path = [ICONDIR, ipInfo.ipVersion, ".svg"].join("");
+
+      // send Message to information popup (if its connected at the moment)
+      if (popupConnectionPort !== null && tabId === popupConnectionTabId) {
+        const message: UpdateContentPortMessage = {
+          action: "updateContent",
+          tabStorage,
+        };
+        popupConnectionPort.postMessage(message);
+      }
+
+      // sets the PageAction title and icon accordingly
+      _browser.pageAction.setTitle({
+        tabId,
+        title,
+      });
+      _browser.pageAction.setIcon({
+        tabId,
+        path,
+      });
     }
-
-    // sets the PageAction title and icon accordingly
-    _browser.pageAction.setTitle({
-      tabId,
-      title,
-    });
-    _browser.pageAction.setIcon({
-      tabId,
-      path,
-    });
   }
 
   // show the icon
-  // if the sore was empty (e.g. new page) show the default icon
+  // if the store was empty (e.g. new page) show the default icon
   _browser.pageAction.show(tabId);
 }
 
@@ -161,15 +160,15 @@ function getIPVersion(ipAddress: string) {
   if (ipAddress.indexOf(":") !== -1) {
     if (ipAddress.startsWith("64:ff9b::")) {
       // TODO make this configurable
-      return IPVERSIONS.IPV6TO4;
+      return IpVersion.IPV6TO4;
     } else {
-      return IPVERSIONS.IPV6;
+      return IpVersion.IPV6;
     }
   } else if (ipAddress.indexOf(".") !== -1) {
-    return IPVERSIONS.IPV4;
+    return IpVersion.IPV4;
   }
 
-  return IPVERSIONS.UNKN;
+  return IpVersion.UNKN;
 }
 
 /**
@@ -183,20 +182,20 @@ function getSecureMode(protocol: string) {
     protocol === "ircs:" ||
     protocol === "wss:"
   ) {
-    return SECUREMODE.SECURE;
+    return SecureMode.SECURE;
   }
 
-  return SECUREMODE.UNSECURE;
+  return SecureMode.UNSECURE;
 }
 
 /**
  * Gets the tabStorage object of the specified tabId or creates it, if not found
  */
 function getOrCreateTabStorage(tabId: number) {
-  let tabStorage = storageMap.get(tabId);
+  let tabStorage = storageMap[tabId];
   if (tabStorage === undefined) {
     tabStorage = new TabStorage();
-    storageMap.set(tabId, tabStorage);
+    storageMap[tabId] = tabStorage;
   }
 
   return tabStorage;
@@ -231,9 +230,8 @@ _browser.webRequest.onResponseStarted.addListener((details) => {
   const urlObj = new URL(details.url);
 
   const tabId = details.tabId;
+  const hostname = urlObj.hostname;
   const ip = details.ip || "";
-  const host = urlObj.hostname;
-  const url = details.url;
   const requestType = details.type;
   const isCached = details.fromCache;
   const isMain = requestType === "main_frame";
@@ -248,12 +246,17 @@ _browser.webRequest.onResponseStarted.addListener((details) => {
 
   if (debugLog)
     console.log(
-      "[" + tabId + "] " + details.requestId + ": Response started " + url
+      "[" +
+        tabId +
+        "] " +
+        details.requestId +
+        ": Response started " +
+        details.url
     );
 
   // delete associated data, as we made a new main request
   if (isMain) {
-    storageMap.delete(tabId);
+    delete storageMap[tabId];
   }
 
   const tabStorage = getOrCreateTabStorage(tabId);
@@ -261,39 +264,31 @@ _browser.webRequest.onResponseStarted.addListener((details) => {
   // check if this is the main request of this frame
   // if so, remember the infos about the IP/Host
   if (isMain) {
-    const mainIpInfo = new IpInfo(url, ip, isCached);
-    tabStorage.main = mainIpInfo;
+    tabStorage.mainHostname = hostname;
+    tabStorage.mainIp = ip;
   }
 
-  let ipsForHostname = tabStorage.hostnames[host];
-  if (ipsForHostname === undefined) {
-    ipsForHostname = {};
-    tabStorage.hostnames[host] = ipsForHostname;
+  let ipInfo = tabStorage.entries.find((e) => {
+    return e.hostname === hostname && e.ip === ip;
+  });
+
+  if (ipInfo === undefined) {
+    ipInfo = new IpInfo(hostname, ip, isCached, isProxied, secureMode, isMain);
+    tabStorage.entries.push(ipInfo);
   }
 
-  let counterIpInfo = ipsForHostname[ip];
-  if (counterIpInfo === undefined) {
-    counterIpInfo = new CounterIpInfo(
-      host,
-      ip,
-      isCached,
-      isProxied,
-      secureMode,
-      isMain
-    );
-    ipsForHostname[ip] = counterIpInfo;
+  ipInfo.counter++;
+  if (ipInfo.isCached && !isCached) {
+    ipInfo.isCached = false;
   }
 
-  counterIpInfo.counter++;
-  if (counterIpInfo.isCached && !isCached) counterIpInfo.isCached = false;
+  if (!ipInfo.isProxied && isProxied) {
+    ipInfo.isProxied = true;
+  }
 
-  if (!counterIpInfo.isProxied && isProxied) counterIpInfo.isProxied = true;
-
-  if (
-    counterIpInfo.secureMode !== secureMode &&
-    counterIpInfo.secureMode !== SECUREMODE.MIXED
-  )
-    counterIpInfo.secureMode = SECUREMODE.MIXED;
+  if (ipInfo.secureMode !== secureMode) {
+    ipInfo.secureMode = SecureMode.MIXED;
+  }
 
   updatePageAction(tabId);
 }, requestFilter);
@@ -329,7 +324,7 @@ _browser.tabs.onAttached.addListener((tabId, attachInfo) => {
  * called when a tab is removed. We clean up our data.
  */
 _browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
-  storageMap.delete(tabId);
+  delete storageMap[tabId];
 });
 
 /*
@@ -342,7 +337,7 @@ _browser.tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
 
   // clean up our data, when a tab itself cleans up
   if (changeInfo.discarded && tabInfo.id) {
-    storageMap.delete(tabInfo.id);
+    delete storageMap[tabInfo.id];
   }
 });
 

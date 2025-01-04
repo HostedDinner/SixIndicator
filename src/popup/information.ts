@@ -1,6 +1,6 @@
 import type {
   ITabStorage,
-  ICounterIpInfo,
+  IIpInfo,
   PortMessage,
   RequestContentPortMessage,
 } from "../types/types";
@@ -23,33 +23,26 @@ function buildTable(table: HTMLTableElement, tabStorage: ITabStorage) {
 
   deleteAllRows(table);
 
-  for (let hostnameProps in tabStorage.hostnames) {
-    if (tabStorage.hostnames.hasOwnProperty(hostnameProps)) {
-      let ipsForHostname = tabStorage.hostnames[hostnameProps];
+  for (let i = 0; i < tabStorage.entries.length; i++) {
+    const ipInfo = tabStorage.entries[i];
 
-      for (var ipsProps in ipsForHostname) {
-        if (ipsForHostname.hasOwnProperty(ipsProps)) {
-          let counterIpInfo = ipsForHostname[ipsProps];
-
-          let newRowElement = table.insertRow(-1);
-          buildRow(newRowElement, counterIpInfo);
-          atLeastOne = true;
-        }
-      }
-    }
+    const newRowElement = table.insertRow(-1);
+    buildRow(newRowElement, ipInfo);
+    atLeastOne = true;
   }
+
   return atLeastOne;
 }
 
 /**
  * Builds one row
  */
-function buildRow(row: HTMLTableRowElement, counterIpInfo: ICounterIpInfo) {
-  row.insertCell(0).appendChild(getIpVersionElement(counterIpInfo.ipVersion));
-  row.insertCell(1).appendChild(getSecureElement(counterIpInfo));
-  row.insertCell(2).appendChild(getCounterElement(counterIpInfo));
-  row.insertCell(3).appendChild(getHostNameElement(counterIpInfo));
-  row.insertCell(4).appendChild(getIpElement(counterIpInfo));
+function buildRow(row: HTMLTableRowElement, ipInfo: IIpInfo) {
+  row.insertCell(0).appendChild(getIpVersionElement(ipInfo.ipVersion));
+  row.insertCell(1).appendChild(getSecureElement(ipInfo));
+  row.insertCell(2).appendChild(getCounterElement(ipInfo));
+  row.insertCell(3).appendChild(getHostNameElement(ipInfo));
+  row.insertCell(4).appendChild(getIpElement(ipInfo));
 }
 
 /**
@@ -88,21 +81,21 @@ function getIpVersionHelpText(ipVersion: string) {
 /**
  * Constructs the counter element
  */
-function getCounterElement(counterIpInfo: ICounterIpInfo) {
-  return document.createTextNode("(" + counterIpInfo.counter + ")");
+function getCounterElement(ipInfo: IIpInfo) {
+  return document.createTextNode("(" + ipInfo.counter + ")");
 }
 
 /**
  * Constructs the Secure element
  */
-function getSecureElement(counterIpInfo: ICounterIpInfo) {
+function getSecureElement(ipInfo: IIpInfo) {
   const newImageHTMLElement = document.createElement("img");
-  const svgPath = [ICONDIR, counterIpInfo.secureMode, ".svg"].join("");
+  const svgPath = [ICONDIR, ipInfo.secureMode, ".svg"].join("");
 
   newImageHTMLElement.src = svgPath;
   newImageHTMLElement.width = 18;
   newImageHTMLElement.height = 18;
-  newImageHTMLElement.title = getSecureHelpText(counterIpInfo.secureMode);
+  newImageHTMLElement.title = getSecureHelpText(ipInfo.secureMode);
 
   return newImageHTMLElement;
 }
@@ -126,17 +119,15 @@ function getSecureHelpText(secureMode: string) {
 /**
  * Constructs the hostname element
  */
-function getHostNameElement(counterIpInfo: ICounterIpInfo) {
+function getHostNameElement(ipInfo: IIpInfo) {
   const newSpanHTMLElement = document.createElement("span");
 
-  newSpanHTMLElement.appendChild(
-    document.createTextNode(counterIpInfo.hostname)
-  );
-  if (counterIpInfo.isMain) {
+  newSpanHTMLElement.appendChild(document.createTextNode(ipInfo.hostname));
+  if (ipInfo.isMain) {
     newSpanHTMLElement.classList.add("mainItem");
   }
 
-  if (counterIpInfo.isProxied) {
+  if (ipInfo.isProxied) {
     newSpanHTMLElement.classList.add("proxyItem");
     newSpanHTMLElement.title = _browser.i18n.getMessage(
       "popupTooltipLoadedProxy"
@@ -149,16 +140,16 @@ function getHostNameElement(counterIpInfo: ICounterIpInfo) {
 /**
  * Constructs the ip element
  */
-function getIpElement(counterIpInfo: ICounterIpInfo) {
+function getIpElement(ipInfo: IIpInfo) {
   const newSpanElement = document.createElement("span");
-  newSpanElement.appendChild(document.createTextNode(counterIpInfo.ip));
+  newSpanElement.appendChild(document.createTextNode(ipInfo.ip));
 
   if (
     navigator.clipboard !== undefined &&
     "function" === typeof navigator.clipboard.writeText
   ) {
     newSpanElement.title = _browser.i18n.getMessage("popupTooltipCopyIp");
-    newSpanElement.dataset.ip = counterIpInfo.ip;
+    newSpanElement.dataset.ip = ipInfo.ip;
     newSpanElement.classList.add("copyableItem");
     newSpanElement.addEventListener("click", function () {
       navigator.clipboard.writeText(this.dataset.ip!);

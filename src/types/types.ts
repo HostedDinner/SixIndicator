@@ -1,25 +1,18 @@
-// interface IHostNamesEntry {
-
-// }
-
 export interface IIpInfo {
-  url: string;
   hostname: string;
-  isCached: boolean;
   ip: string;
-  ipVersion: string; // TODO string enum
-}
-
-export interface ICounterIpInfo extends IIpInfo {
+  ipVersion: string; // actually string enum, but as we have only interfaces here, we cant define it really
+  isCached: boolean;
   isProxied: boolean;
-  secureMode: string; // TODO String Enum
+  secureMode: string; // actually string enum, but as we have only interfaces here, we cant define it really
   isMain: boolean;
   counter: number;
 }
 
 export interface ITabStorage {
-  hostnames: Record<string, Record<string, ICounterIpInfo>>;
-  main: IIpInfo;
+  entries: IIpInfo[];
+  mainIp?: string;
+  mainHostname?: string;
 }
 
 export type UpdateContentPortMessage = {
