@@ -37,3 +37,7 @@ export type WebResponseCacheDetailsWithProxyInfo = {
     failoverTimeout: number;
   };
 };
+
+export type SessionStorageTabData = {
+  [key: string]: ITabStorage | undefined;
+};

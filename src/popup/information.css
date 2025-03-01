@@ -1,6 +1,26 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 30rem;
+}
+
 body {
-  margin: 20px;
+  margin: 1rem;
+  min-width: 30rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.75rem;
   color: #000;
+}
+
+table {
+  width: 100%;
+}
+
+td {
+  display: table-cell;
+  vertical-align: middle;
 }
 
 .mainItem {

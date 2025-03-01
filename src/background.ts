@@ -4,15 +4,13 @@ import type {
   PortMessage,
   UpdateContentPortMessage,
   WebResponseCacheDetailsWithProxyInfo,
+  SessionStorageTabData,
 } from "./types/types";
 
 // TODO port to browser Namespace and Promises with kind of fallback/or polyfill for chrome
 //browser chrome fix
 //const browser = window.browser || window.chrome;
 const _browser = chrome;
-
-// variables / consts
-const debugLog = false;
 
 const requestFilter = {
   urls: ["<all_urls>"],
@@ -34,7 +32,7 @@ enum SecureMode {
 
 const ICONDIR = "icons/";
 
-const storageMap: Partial<Record<number, ITabStorage>> = {};
+// FIXME: this will not work, when service worker shuts down
 let popupConnectionPort: chrome.runtime.Port | null = null;
 let popupConnectionTabId: number | null = null;
 
@@ -90,24 +88,25 @@ class IpInfo implements IIpInfo {
 /**
  * Gets the active Tab ID as promise.
  */
-function queryActiveTabId() {
-  return new Promise<number>((resolve, reject) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs.length === 1 && tabs[0].id) {
-        resolve(tabs[0].id);
-      } else {
-        reject("Found " + tabs.length + " Tabs, instead of 1");
-      }
-    });
+async function queryActiveTabId() {
+  const activeTabs = await _browser.tabs.query({
+    active: true,
+    currentWindow: true,
   });
+
+  if (activeTabs.length === 1 && activeTabs[0].id) {
+    return activeTabs[0].id;
+  }
+
+  throw "Found " + activeTabs.length + " Tabs, instead of 1";
 }
 
-function updatePageAction(tabId: number) {
+async function updatePageAction(tabId: number) {
   if (tabId === -1) {
     return;
   }
 
-  const tabStorage = storageMap[tabId];
+  const tabStorage = await getOrCreateTabStorage(tabId);
   const mainHostname = tabStorage?.mainHostname;
   const mainIp = tabStorage?.mainIp;
 
@@ -137,20 +136,16 @@ function updatePageAction(tabId: number) {
       }
 
       // sets the PageAction title and icon accordingly
-      _browser.pageAction.setTitle({
+      await _browser.action.setTitle({
         tabId,
         title,
       });
-      _browser.pageAction.setIcon({
+      await _browser.action.setIcon({
         tabId,
         path,
       });
     }
   }
-
-  // show the icon
-  // if the store was empty (e.g. new page) show the default icon
-  _browser.pageAction.show(tabId);
 }
 
 /**
@@ -189,40 +184,47 @@ function getSecureMode(protocol: string) {
 }
 
 /**
+ * Gets the key for looking up the TabStorage in the browser storage
+ */
+function getTabStorageKey(tabId: number) {
+  return `tab--${tabId}`;
+}
+
+/**
  * Gets the tabStorage object of the specified tabId or creates it, if not found
  */
-function getOrCreateTabStorage(tabId: number) {
-  let tabStorage = storageMap[tabId];
+async function getOrCreateTabStorage(tabId: number) {
+  const key = getTabStorageKey(tabId);
+
+  const filteredTabStorage = (await _browser.storage.session.get(
+    key
+  )) as SessionStorageTabData;
+  let tabStorage = filteredTabStorage[key];
+
   if (tabStorage === undefined) {
     tabStorage = new TabStorage();
-    storageMap[tabId] = tabStorage;
+    await _browser.storage.session.set({ [key]: tabStorage });
   }
 
   return tabStorage;
 }
 
-// listeners
+async function updateTabStorage(tabId: number, tabStorage: ITabStorage | null) {
+  const key = getTabStorageKey(tabId);
 
-/**
- * (Debugging only) Called when a request is beeing send.
- */
-if (debugLog) {
-  _browser.webRequest.onBeforeRequest.addListener((details) => {
-    console.log(
-      "[" +
-        details.tabId +
-        "] " +
-        details.requestId +
-        ": Request started " +
-        details.url
-    );
-  }, requestFilter);
+  if (tabStorage == null) {
+    await _browser.storage.session.remove(key);
+  } else {
+    await _browser.storage.session.set({ [key]: tabStorage });
+  }
 }
+
+// listeners
 
 /*
  * called for every request
  */
-_browser.webRequest.onResponseStarted.addListener((details) => {
+_browser.webRequest.onResponseStarted.addListener(async (details) => {
   if (details.tabId === -1) {
     return;
   }
@@ -244,28 +246,18 @@ _browser.webRequest.onResponseStarted.addListener((details) => {
     detailsEx.proxyInfo.type !== "direct";
   const secureMode = getSecureMode(urlObj.protocol);
 
-  if (debugLog)
-    console.log(
-      "[" +
-        tabId +
-        "] " +
-        details.requestId +
-        ": Response started " +
-        details.url
-    );
+  let tabStorage: ITabStorage;
 
-  // delete associated data, as we made a new main request
   if (isMain) {
-    delete storageMap[tabId];
-  }
+    // ignore the associated data, as we made a new main request
+    tabStorage = new TabStorage();
 
-  const tabStorage = getOrCreateTabStorage(tabId);
-
-  // check if this is the main request of this frame
-  // if so, remember the infos about the IP/Host
-  if (isMain) {
+    // remember the infos about the IP/Host
     tabStorage.mainHostname = hostname;
     tabStorage.mainIp = ip;
+  } else {
+    // get the current data
+    tabStorage = await getOrCreateTabStorage(tabId);
   }
 
   let ipInfo = tabStorage.entries.find((e) => {
@@ -290,54 +282,27 @@ _browser.webRequest.onResponseStarted.addListener((details) => {
     ipInfo.secureMode = SecureMode.MIXED;
   }
 
+  await updateTabStorage(tabId, tabStorage);
+
   updatePageAction(tabId);
 }, requestFilter);
-
-/*
- * Called, when a (new) tab gets activated
- * keep showing the icon on every tab and not only on tabs wich have done at least one request
- * in the case of a new tab the '?' is shown
- */
-_browser.tabs.onActivated.addListener((activeInfo) => {
-  updatePageAction(activeInfo.tabId);
-});
-
-/**
- * Called, when a tab is created.
- * As we probably do not have any data about this tab, just show the icon. (unknown state)
- */
-_browser.tabs.onCreated.addListener((tabInfo) => {
-  if (tabInfo.id) {
-    _browser.pageAction.show(tabInfo.id);
-  }
-});
-
-/*
- * called when a tab is moved around
- * Force showing the icon again, sometimes it gets destroyed (bug?)
- */
-_browser.tabs.onAttached.addListener((tabId, attachInfo) => {
-  _browser.pageAction.show(tabId);
-});
 
 /**
  * called when a tab is removed. We clean up our data.
  */
 _browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
-  delete storageMap[tabId];
+  // no need to await the result
+  updateTabStorage(tabId, null);
 });
 
 /*
  * Called when a tab is updated.
  */
 _browser.tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
-  if (changeInfo.status === "complete") {
-    _browser.pageAction.show(tabId);
-  }
-
   // clean up our data, when a tab itself cleans up
   if (changeInfo.discarded && tabInfo.id) {
-    delete storageMap[tabInfo.id];
+    // no need to await the result
+    updateTabStorage(tabInfo.id, null);
   }
 });
 
@@ -347,7 +312,6 @@ _browser.tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
  */
 _browser.runtime.onConnect.addListener((port) => {
   popupConnectionPort = port;
-  if (debugLog) console.log("Page has connected");
 
   popupConnectionPort.onMessage.addListener((message: PortMessage) => {
     const action = message.action;
@@ -364,6 +328,5 @@ _browser.runtime.onConnect.addListener((port) => {
   popupConnectionPort.onDisconnect.addListener((port) => {
     popupConnectionPort = null;
     popupConnectionTabId = null;
-    if (debugLog) console.log("Page has disconnected");
   });
 });
