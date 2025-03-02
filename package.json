@@ -5,18 +5,23 @@
   "type": "module",
   "scripts": {
     "clean": "rimraf build",
-    "copy": "copyfiles -u 1 -e \"**/*.js\" -e \"**/*.ts\" \"src/**/*\" build",
+    "copy": "copyfiles -u 1 -e \"**/*.js\" -e \"**/*.ts\" -e \"**/manifest*.json\" \"src/**/*\" build",
     "build:ts": "tsc",
-    "build:webext": "web-ext build",
+    "build:manifest:ff": "node build-manifest.mjs --name 'firefox'",
+    "build:manifest:chrome": "node build-manifest.mjs --name 'chrome'",
+    "build:webext:ff": "web-ext build --filename '{name}-{version}-ff.zip'",
+    "build:webext:chrome": "web-ext build --filename '{name}-{version}-chrome.zip'",
     "dev:webext": "web-ext build --filename '{name}-{version}-snapshot.zip' --overwrite-dest",
-    "build": "yarn clean && yarn copy && yarn build:ts && yarn build:webext",
-    "dev": "yarn clean && yarn copy && yarn build:ts && yarn dev:webext"
+    "build": "yarn clean && yarn copy && yarn build:ts && yarn build:manifest:ff && yarn build:webext:ff && yarn build:manifest:chrome && yarn build:webext:chrome",
+    "dev-ff": "yarn clean && yarn copy && yarn build:ts && yarn build:manifest:ff && yarn dev:webext",
+    "dev-chrome": "yarn clean && yarn copy && yarn build:ts && yarn build:manifest:chrome && yarn dev:webext"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.8",
     "@types/chrome": "^0.0.307",
     "@types/copyfiles": "^2.4.4",
     "@types/firefox-webext-browser": "^120.0.4",
+    "commander": "^13.1.0",
     "copyfiles": "^2.4.1",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.2",

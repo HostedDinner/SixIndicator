@@ -781,6 +781,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"commander@npm:^13.1.0":
+  version: 13.1.0
+  resolution: "commander@npm:13.1.0"
+  checksum: 10c0/7b8c5544bba704fbe84b7cab2e043df8586d5c114a4c5b607f83ae5060708940ed0b5bd5838cf8ce27539cde265c1cbd59ce3c8c6b017ed3eec8943e3a415164
+  languageName: node
+  linkType: hard
+
 "commander@npm:^9.1.0":
   version: 9.5.0
   resolution: "commander@npm:9.5.0"
@@ -2870,6 +2877,7 @@ __metadata:
     "@types/chrome": "npm:^0.0.307"
     "@types/copyfiles": "npm:^2.4.4"
     "@types/firefox-webext-browser": "npm:^120.0.4"
+    commander: "npm:^13.1.0"
     copyfiles: "npm:^2.4.1"
     rimraf: "npm:^6.0.1"
     typescript: "npm:^5.8.2"
