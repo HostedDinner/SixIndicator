@@ -7,13 +7,16 @@
   "description": "__MSG_extensionDescription__",
   "homepage_url": "https://github.com/HostedDinner/SixIndicator",
   "icons": {
-    "48": "icons/v6only.svg",
-    "96": "icons/v6only.svg"
+    "48": "icons/v6only_48.png",
+    "128": "icons/v6only_128.png"
   },
   "permissions": ["tabs", "webRequest", "storage"],
   "host_permissions": ["<all_urls>"],
   "action": {
-    "default_icon": "icons/unknown.svg",
+    "default_icon": {
+      "48": "icons/unknown_48.png",
+      "128": "icons/unknown_128.png"
+    },
     "default_title": "__MSG_pageActionDefaultTooltip__",
     "default_popup": "popup/information.html"
   },

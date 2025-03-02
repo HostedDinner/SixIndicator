@@ -124,7 +124,11 @@ async function updatePageAction(tabId: number) {
         printedIp,
       ]);
 
-      const path = [ICONDIR, ipInfo.ipVersion, ".svg"].join("");
+      //const path = [ICONDIR, ipInfo.ipVersion, ".svg"].join("");
+      const paths = {
+        "48": [ICONDIR, ipInfo.ipVersion, "_48.png"].join(""),
+        "128": [ICONDIR, ipInfo.ipVersion, "_128.png"].join(""),
+      };
 
       // send Message to information popup (if its connected at the moment)
       if (popupConnectionPort !== null && tabId === popupConnectionTabId) {
@@ -142,7 +146,7 @@ async function updatePageAction(tabId: number) {
       });
       await _browser.action.setIcon({
         tabId,
-        path,
+        path: paths,
       });
     }
   }
