@@ -108,9 +108,9 @@ async function updatePageAction(tabId: number) {
 
   const tabStorage = await getOrCreateTabStorage(tabId);
   const mainHostname = tabStorage?.mainHostname;
-  const mainIp = tabStorage?.mainIp;
+  const mainIp = tabStorage?.mainIp ?? "";
 
-  if (tabStorage && mainHostname && mainIp) {
+  if (tabStorage && mainHostname) {
     const ipInfo = tabStorage.entries.find((e) => {
       return e.hostname === mainHostname && e.ip === mainIp;
     });
