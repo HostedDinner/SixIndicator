@@ -226,13 +226,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/chrome@npm:^0.0.307":
-  version: 0.0.307
-  resolution: "@types/chrome@npm:0.0.307"
+"@types/chrome@npm:^0.0.308":
+  version: 0.0.308
+  resolution: "@types/chrome@npm:0.0.308"
   dependencies:
     "@types/filesystem": "npm:*"
     "@types/har-format": "npm:*"
-  checksum: 10c0/b23f109d8aeae1a629e9391e90db7cce512727f5257d0e111a644185666c921f90ea67674ca07ba00124b1ef57aa8c3ce737e81d85323927f9b83d9ed668a098
+  checksum: 10c0/3964b47889ad617ae5734620e0beebd225fdc41196f29020267c8db39cd9af1781a70fb44b863fc57ad5c18db835ec1fa214445e6e916bf13840cccb569e078b
   languageName: node
   linkType: hard
 
@@ -2874,7 +2874,7 @@ __metadata:
   resolution: "six-indicator@workspace:."
   dependencies:
     "@tsconfig/recommended": "npm:^1.0.8"
-    "@types/chrome": "npm:^0.0.307"
+    "@types/chrome": "npm:^0.0.308"
     "@types/copyfiles": "npm:^2.4.4"
     "@types/firefox-webext-browser": "npm:^120.0.4"
     commander: "npm:^13.1.0"
