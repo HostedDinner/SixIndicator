@@ -1,7 +1,7 @@
 {
   "name": "six-indicator",
   "version": "1.4.1",
-  "packageManager": "yarn@4.7.0",
+  "packageManager": "yarn@4.9.2",
   "type": "module",
   "scripts": {
     "clean": "rimraf build",
@@ -17,14 +17,14 @@
     "dev-chrome": "yarn clean && yarn copy && yarn build:ts && yarn build:manifest:chrome && yarn dev:webext"
   },
   "devDependencies": {
-    "@tsconfig/recommended": "^1.0.8",
-    "@types/chrome": "^0.0.308",
+    "@tsconfig/recommended": "^1.0.10",
+    "@types/chrome": "^0.0.327",
     "@types/copyfiles": "^2.4.4",
     "@types/firefox-webext-browser": "^120.0.4",
-    "commander": "^13.1.0",
+    "commander": "^14.0.0",
     "copyfiles": "^2.4.1",
     "rimraf": "^6.0.1",
-    "typescript": "^5.8.2",
-    "web-ext": "^8.4.0"
+    "typescript": "^5.8.3",
+    "web-ext": "^8.8.0"
   }
 }
