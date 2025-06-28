@@ -16,19 +16,19 @@ const requestFilter = {
   urls: ["<all_urls>"],
 };
 
-enum IpVersion {
-  IPV4 = "v4",
-  IPV6 = "v6",
-  IPV6TO4 = "v6to4",
-  UNKN = "unknown",
-  CACHE = "cache",
-}
+const IpVersion = {
+  IPV4: "v4",
+  IPV6: "v6",
+  IPV6TO4: "v6to4",
+  UNKN: "unknown",
+  CACHE: "cache",
+} as const;
 
-enum SecureMode {
-  SECURE = "secure",
-  UNSECURE = "unsecure",
-  MIXED = "mixed",
-}
+const SecureMode = {
+  SECURE: "secure",
+  UNSECURE: "unsecure",
+  MIXED: "mixed",
+} as const;
 
 const ICONDIR = "icons/";
 
