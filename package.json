@@ -1,6 +1,6 @@
 {
   "name": "six-indicator",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "packageManager": "yarn@4.9.2",
   "type": "module",
   "scripts": {
