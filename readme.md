@@ -31,6 +31,14 @@ Similar plugins:
 
 Find SixIndicator at [addons.mozilla.org](https://addons.mozilla.org/de/firefox/addon/sixindicator/)
 
+## Chrome
+
+![CWS Version](https://flat.badgen.net/chrome-web-store/v/coeagcljfffacgkgcjnloikpcbjfdppg?color=blue&label=Version&icon=chrome)
+![CWS Users](https://flat.badgen.net/chrome-web-store/users/coeagcljfffacgkgcjnloikpcbjfdppg?color=blue&label=Users&icon=chrome)
+![CWS Rating](https://flat.badgen.net/chrome-web-store/rating/coeagcljfffacgkgcjnloikpcbjfdppg?color=blue&label=Rating&icon=chrome)
+
+Find SixIndicator at [chromewebstore.google.com](https://chromewebstore.google.com/detail/sixindicator/coeagcljfffacgkgcjnloikpcbjfdppg)
+
 ## Privacy Policy
 
 See [Privacy Policy](/privacy-policy.md)
