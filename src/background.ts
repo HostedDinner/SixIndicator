@@ -185,7 +185,28 @@ function getSecureMode(protocol: string) {
 }
 
 /**
- * Gets the key for looking up the TabStorage in the browser storage
+ * TabStorage "Cache" which lives as long as the service worker / background script
+ */
+let tabStorageCache: { [tabId: string]: TabStorage | undefined } | null = null;
+
+/**
+ * Gets and initialize the TabStorageCache
+ */
+async function getTabStorageCache() {
+  // get the TabStorage Cache from the session storage
+  if (tabStorageCache == null) {
+    tabStorageCache = await _browser.storage.session.get(null);
+
+    if (tabStorageCache == null) {
+      tabStorageCache = {};
+    }
+  }
+
+  return tabStorageCache;
+}
+
+/**
+ * Gets the key for looking up the TabStorage in the browser storage / tab storage cache
  */
 function getTabStorageKey(tabId: number) {
   return `tab--${tabId}`;
@@ -195,29 +216,38 @@ function getTabStorageKey(tabId: number) {
  * Gets the tabStorage object of the specified tabId or creates it, if not found
  */
 async function getOrCreateTabStorage(tabId: number) {
+  const tsc = await getTabStorageCache();
   const key = getTabStorageKey(tabId);
 
-  const filteredTabStorage = (await _browser.storage.session.get(
-    key
-  )) as SessionStorageTabData;
-  let tabStorage = filteredTabStorage[key];
-
-  if (tabStorage === undefined) {
+  let tabStorage = tsc[key];
+  if (tabStorage == undefined) {
     tabStorage = new TabStorage();
-    await _browser.storage.session.set({ [key]: tabStorage });
+    tsc[key] = tabStorage;
+    writeBackTabStorages();
   }
 
   return tabStorage;
 }
 
-async function updateTabStorage(tabId: number, tabStorage: ITabStorage | null) {
+/**
+ * Clears the tab data from cache / storage
+ */
+async function clearTabData(tabId: number) {
+  const tsc = await getTabStorageCache();
   const key = getTabStorageKey(tabId);
 
-  if (tabStorage == null) {
-    await _browser.storage.session.remove(key);
-  } else {
-    await _browser.storage.session.set({ [key]: tabStorage });
-  }
+  delete tsc[key];
+  writeBackTabStorages();
+}
+
+/**
+ * Writes back the TabData to session storage (in case the bckground script shuts down)
+ */
+function writeBackTabStorages() {
+  // TODO debounced?
+  getTabStorageCache().then((tsc) => {
+    _browser.storage.session.set(tsc);
+  });
 }
 
 async function updateTitleAndIcon(
@@ -229,17 +259,16 @@ async function updateTitleAndIcon(
     return;
   }
 
+  title = title ?? _browser.i18n.getMessage("popupDefaultText");
+  paths = paths ?? {
+    "48": [ICONDIR, "unknown_48.png"].join(""),
+    "128": [ICONDIR, "unknown_128.png"].join(""),
+  };
+
   await _browser.action.setTitle({
     tabId,
     title: title ?? _browser.i18n.getMessage("popupDefaultText"),
   });
-
-  if (!paths) {
-    paths = {
-      "48": [ICONDIR, "unknown_48.png"].join(""),
-      "128": [ICONDIR, "unknown_128.png"].join(""),
-    };
-  }
 
   await _browser.action.setIcon({
     tabId,
@@ -260,9 +289,9 @@ _browser.webNavigation.onBeforeNavigate.addListener(async (details) => {
   }
 
   // ignore the associated data, as we navigate to a new page
-  updateTabStorage(tabId, null);
+  clearTabData(tabId);
 
-  // -> do not update yet, the real request will do the update anyway
+  // do not update yet, the real request will do the update anyway
   //updatePageAction(tabId);
 });
 
@@ -322,7 +351,7 @@ _browser.webRequest.onResponseStarted.addListener(async (details) => {
     ipInfo.secureMode = SecureMode.MIXED;
   }
 
-  await updateTabStorage(tabId, tabStorage);
+  writeBackTabStorages();
 
   updatePageAction(tabId);
 }, requestFilter);
@@ -332,7 +361,7 @@ _browser.webRequest.onResponseStarted.addListener(async (details) => {
  */
 _browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
   // no need to await the result
-  updateTabStorage(tabId, null);
+  clearTabData(tabId);
 });
 
 /*
@@ -342,8 +371,15 @@ _browser.tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
   // clean up our data, when a tab itself cleans up
   if (changeInfo.discarded && tabInfo.id) {
     // no need to await the result
-    updateTabStorage(tabInfo.id, null);
+    clearTabData(tabInfo.id);
   }
+});
+
+/**
+ * At least try to save the data on suspend
+ */
+_browser.runtime.onSuspend.addListener(() => {
+  writeBackTabStorages();
 });
 
 /*
