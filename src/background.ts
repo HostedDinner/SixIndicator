@@ -107,10 +107,14 @@ async function updatePageAction(tabId: number) {
   }
 
   const tabStorage = await getOrCreateTabStorage(tabId);
-  const mainHostname = tabStorage?.mainHostname;
-  const mainIp = tabStorage?.mainIp ?? "";
+  const mainHostname = tabStorage.mainHostname;
 
-  if (tabStorage && mainHostname) {
+  let title = null;
+  let paths = null;
+
+  if (mainHostname) {
+    const mainIp = tabStorage.mainIp ?? "";
+
     const ipInfo = tabStorage.entries.find((e) => {
       return e.hostname === mainHostname && e.ip === mainIp;
     });
@@ -119,13 +123,13 @@ async function updatePageAction(tabId: number) {
       const printedIp = ipInfo.isCached
         ? _browser.i18n.getMessage("pageActionCached")
         : ipInfo.ip;
-      const title = _browser.i18n.getMessage("pageActionTooltip", [
+      title = _browser.i18n.getMessage("pageActionTooltip", [
         ipInfo.hostname,
         printedIp,
       ]);
 
       //const path = [ICONDIR, ipInfo.ipVersion, ".svg"].join("");
-      const paths = {
+      paths = {
         "48": [ICONDIR, ipInfo.ipVersion, "_48.png"].join(""),
         "128": [ICONDIR, ipInfo.ipVersion, "_128.png"].join(""),
       };
@@ -138,22 +142,15 @@ async function updatePageAction(tabId: number) {
         };
         popupConnectionPort.postMessage(message);
       }
-
-      // sets the PageAction title and icon accordingly
-      await _browser.action.setTitle({
-        tabId,
-        title,
-      });
-      await _browser.action.setIcon({
-        tabId,
-        path: paths,
-      });
     }
   }
+
+  // sets the PageAction title and icon accordingly
+  await updateTitleAndIcon(tabId, title, paths);
 }
 
 /**
- * Determines, if the given IP address is IPv4, Ipv6 or not determinable
+ * Gets the IPVersion for the given IP address
  */
 function getIPVersion(ipAddress: string) {
   if (ipAddress.indexOf(":") !== -1) {
@@ -223,10 +220,54 @@ async function updateTabStorage(tabId: number, tabStorage: ITabStorage | null) {
   }
 }
 
+async function updateTitleAndIcon(
+  tabId: number,
+  title: string | null,
+  paths: string | { [index: number]: string } | null
+) {
+  if (tabId === -1) {
+    return;
+  }
+
+  await _browser.action.setTitle({
+    tabId,
+    title: title ?? _browser.i18n.getMessage("popupDefaultText"),
+  });
+
+  if (!paths) {
+    paths = {
+      "48": [ICONDIR, "unknown_48.png"].join(""),
+      "128": [ICONDIR, "unknown_128.png"].join(""),
+    };
+  }
+
+  await _browser.action.setIcon({
+    tabId,
+    path: paths,
+  });
+}
+
 // listeners
 
+/**
+ * Clear TabStorage before the first request happends
+ */
+_browser.webNavigation.onBeforeNavigate.addListener(async (details) => {
+  const tabId = details.tabId;
+
+  if (tabId === -1 || details.frameId !== 0) {
+    return;
+  }
+
+  // ignore the associated data, as we navigate to a new page
+  updateTabStorage(tabId, null);
+
+  // -> do not update yet, the real request will do the update anyway
+  //updatePageAction(tabId);
+});
+
 /*
- * called for every request
+ * Called for every request; store the relevant data
  */
 _browser.webRequest.onResponseStarted.addListener(async (details) => {
   if (details.tabId === -1) {
@@ -250,18 +291,13 @@ _browser.webRequest.onResponseStarted.addListener(async (details) => {
     detailsEx.proxyInfo.type !== "direct";
   const secureMode = getSecureMode(urlObj.protocol);
 
-  let tabStorage: ITabStorage;
+  // get the current data
+  const tabStorage = await getOrCreateTabStorage(tabId);
 
   if (isMain) {
-    // ignore the associated data, as we made a new main request
-    tabStorage = new TabStorage();
-
     // remember the infos about the IP/Host
     tabStorage.mainHostname = hostname;
     tabStorage.mainIp = ip;
-  } else {
-    // get the current data
-    tabStorage = await getOrCreateTabStorage(tabId);
   }
 
   let ipInfo = tabStorage.entries.find((e) => {
@@ -292,7 +328,7 @@ _browser.webRequest.onResponseStarted.addListener(async (details) => {
 }, requestFilter);
 
 /**
- * called when a tab is removed. We clean up our data.
+ * Called when a tab is removed. We clean up our data.
  */
 _browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
   // no need to await the result

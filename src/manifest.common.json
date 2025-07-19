@@ -10,7 +10,7 @@
     "48": "icons/v6only_48.png",
     "128": "icons/v6only_128.png"
   },
-  "permissions": ["webRequest", "storage"],
+  "permissions": ["webNavigation", "webRequest", "storage"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_icon": {
