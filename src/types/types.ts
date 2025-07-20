@@ -17,6 +17,7 @@ export interface ITabStorage {
 
 export type UpdateContentPortMessage = {
   action: "updateContent";
+  tabId: number;
   tabStorage: ITabStorage;
 };
 

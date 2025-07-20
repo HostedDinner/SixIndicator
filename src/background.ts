@@ -138,6 +138,7 @@ async function updatePageAction(tabId: number) {
       if (popupConnectionPort !== null && tabId === popupConnectionTabId) {
         const message: UpdateContentPortMessage = {
           action: "updateContent",
+          tabId,
           tabStorage,
         };
         popupConnectionPort.postMessage(message);

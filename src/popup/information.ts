@@ -202,6 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
             noteElement.style.display = "none";
           }
         }
+        document.body.dataset["tabId"] = String(message.tabId);
         break;
     }
   });
