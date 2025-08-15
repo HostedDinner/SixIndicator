@@ -4,7 +4,7 @@ import type {
   PortMessage,
   UpdateContentPortMessage,
   WebResponseCacheDetailsWithProxyInfo,
-  SessionStorageTabData,
+  TabStorageCache,
 } from "./types/types";
 
 // TODO port to browser Namespace and Promises with kind of fallback/or polyfill for chrome
@@ -188,7 +188,7 @@ function getSecureMode(protocol: string) {
 /**
  * TabStorage "Cache" which lives as long as the service worker / background script
  */
-let tabStorageCache: { [tabId: string]: TabStorage | undefined } | null = null;
+let tabStorageCache: TabStorageCache | null = null;
 
 /**
  * Gets and initialize the TabStorageCache

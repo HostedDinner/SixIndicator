@@ -39,6 +39,6 @@ export type WebResponseCacheDetailsWithProxyInfo = {
   };
 };
 
-export type SessionStorageTabData = {
-  [key: string]: ITabStorage | undefined;
+export type TabStorageCache = {
+  [tabId: string]: ITabStorage | undefined;
 };
