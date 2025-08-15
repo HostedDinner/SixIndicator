@@ -46,17 +46,19 @@ let popupConnectionTabId: number | null = null;
 
 class TabStorage implements ITabStorage {
   entries: IIpInfo[];
-  mainIp?: string;
+  mainIp?: string | null;
   mainHostname?: string;
+  preRequestState: boolean;
 
   constructor() {
     this.entries = [];
+    this.preRequestState = true;
   }
 }
 
 class IpInfo implements IIpInfo {
   hostname: string;
-  ip: string;
+  ip: string | null;
   ipVersion: string;
   isCached: boolean;
   isProxied: boolean;
@@ -66,21 +68,19 @@ class IpInfo implements IIpInfo {
 
   constructor(
     hostname: string,
-    ip: string,
+    ip: string | null,
     isCached: boolean,
     isProxied: boolean,
     secureMode: string,
     isMain: boolean
   ) {
     this.hostname = hostname;
-    if (ip === "") {
-      this.ip = "";
+    this.ip = ip;
+    if (ip === null) {
       this.ipVersion = isCached ? IpVersion.CACHE : IpVersion.UNKN;
     } else {
-      this.ip = ip;
       this.ipVersion = getIPVersion(ip);
     }
-
     this.isCached = isCached;
     this.isProxied = isProxied;
     this.secureMode = secureMode;
@@ -119,11 +119,31 @@ async function updatePageAction(tabId: number) {
   let paths = null;
 
   if (mainHostname) {
-    const mainIp = tabStorage.mainIp ?? "";
+    const mainIp = tabStorage.mainIp;
 
-    const ipInfo = tabStorage.entries.find((e) => {
+    let ipInfo = undefined;
+
+    ipInfo = tabStorage.entries.find((e) => {
       return e.hostname === mainHostname && e.ip === mainIp;
     });
+
+    if (
+      !ipInfo ||
+      ipInfo.ipVersion === IpVersion.CACHE ||
+      ipInfo.ipVersion === IpVersion.UNKN
+    ) {
+      const ipInfo2 = tabStorage.entries.find((e) => {
+        return (
+          e.hostname === mainHostname &&
+          e.ipVersion !== IpVersion.CACHE &&
+          e.ipVersion !== IpVersion.UNKN
+        );
+      });
+
+      if (ipInfo2) {
+        ipInfo = ipInfo2;
+      }
+    }
 
     if (ipInfo) {
       const printedIp = ipInfo.isCached
@@ -131,7 +151,7 @@ async function updatePageAction(tabId: number) {
         : ipInfo.ip;
       title = _browser.i18n.getMessage("pageActionTooltip", [
         ipInfo.hostname,
-        printedIp,
+        printedIp ?? "",
       ]);
 
       //const path = [ICONDIR, ipInfo.ipVersion, ".svg"].join("");
@@ -286,35 +306,52 @@ async function updateTitleAndIcon(
 // listeners
 
 /**
- * Clear TabStorage before the first request happends
+ * Clear previous data in beforeNavigate. Set some preliminary data.
+ * Browsers will likely not emmit any webRequest-Handler for cached data (or already render data from history)
  */
 _browser.webNavigation.onBeforeNavigate.addListener(async (details) => {
   const tabId = details.tabId;
-
-  if (tabId === -1 || details.frameId !== 0) {
+  const frameId = details.frameId;
+  if (tabId === -1 || frameId !== 0) {
     return;
   }
 
   // ignore the associated data, as we navigate to a new page
-  clearTabData(tabId);
+  await clearTabData(tabId);
+  const tabStorage = await getOrCreateTabStorage(tabId);
 
-  // do not update yet, the real request will do the update anyway
-  //updatePageAction(tabId);
+  // set preliminary data (and only data when history backward/forward)
+  if (tabStorage.preRequestState && !tabStorage.mainHostname && details.url) {
+    const urlObj = new URL(details.url);
+    const hostname = urlObj.hostname;
+    const secureMode = getSecureMode(urlObj.protocol);
+
+    tabStorage.mainHostname = hostname;
+    tabStorage.mainIp = null;
+
+    const ipInfo = new IpInfo(hostname, null, true, false, secureMode, true);
+    ipInfo.counter++;
+    tabStorage.entries.push(ipInfo);
+
+    updatePageAction(tabId);
+  }
+
+  writeBackTabStorages();
 });
 
-/*
- * Called for every request; store the relevant data
+/**
+ * Analyse response data and update the TabStorage
  */
 _browser.webRequest.onResponseStarted.addListener(async (details) => {
-  if (details.tabId === -1) {
+  const tabId = details.tabId;
+  if (tabId === -1) {
     return;
   }
 
   const urlObj = new URL(details.url);
 
-  const tabId = details.tabId;
   const hostname = urlObj.hostname;
-  const ip = details.ip || "";
+  const ip = details.ip || null;
   const requestType = details.type;
   const isCached = details.fromCache;
   const isMain = requestType === "main_frame";
@@ -334,6 +371,12 @@ _browser.webRequest.onResponseStarted.addListener(async (details) => {
     // remember the infos about the IP/Host
     tabStorage.mainHostname = hostname;
     tabStorage.mainIp = ip;
+
+    if (tabStorage.preRequestState) {
+      // clear the preliminary data
+      tabStorage.entries = [];
+      tabStorage.preRequestState = false;
+    }
   }
 
   let ipInfo = tabStorage.entries.find((e) => {

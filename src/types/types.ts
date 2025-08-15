@@ -1,6 +1,6 @@
 export interface IIpInfo {
   hostname: string;
-  ip: string;
+  ip: string | null;
   ipVersion: string; // actually string enum, but as we have only interfaces here, we cant define it really
   isCached: boolean;
   isProxied: boolean;
@@ -11,8 +11,9 @@ export interface IIpInfo {
 
 export interface ITabStorage {
   entries: IIpInfo[];
-  mainIp?: string;
+  mainIp?: string | null;
   mainHostname?: string;
+  preRequestState: boolean;
 }
 
 export type UpdateContentPortMessage = {

@@ -149,14 +149,14 @@ function getHostNameElement(ipInfo: IIpInfo) {
  */
 function getIpElement(ipInfo: IIpInfo) {
   const newSpanElement = document.createElement("span");
-  newSpanElement.appendChild(document.createTextNode(ipInfo.ip));
+  newSpanElement.appendChild(document.createTextNode(ipInfo.ip ?? ""));
 
   if (
     navigator.clipboard !== undefined &&
     "function" === typeof navigator.clipboard.writeText
   ) {
     newSpanElement.title = _browser.i18n.getMessage("popupTooltipCopyIp");
-    newSpanElement.dataset.ip = ipInfo.ip;
+    newSpanElement.dataset.ip = ipInfo.ip ?? "";
     newSpanElement.classList.add("copyableItem");
     newSpanElement.addEventListener("click", function () {
       navigator.clipboard.writeText(this.dataset.ip!);
