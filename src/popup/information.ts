@@ -2,14 +2,21 @@ import type {
   ITabStorage,
   IIpInfo,
   PortMessage,
+  UpdateContentPortMessage,
   RequestContentPortMessage,
 } from "../types/types";
 
 const ICONDIR = "../icons/";
 
-//browser chrome fix
-//const browser = window.browser || window.chrome;
-const _browser = chrome;
+//browser/chrome namespace fix
+var _browser: typeof browser | typeof chrome;
+if (typeof browser !== "undefined") {
+  _browser = browser;
+} else if (typeof chrome !== "undefined") {
+  _browser = chrome;
+} else {
+  throw "Neither browser nor chrome namespace is defined";
+}
 
 /**
  * Builds the table of elements
@@ -184,8 +191,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const backgroundConnectionPort = _browser.runtime.connect();
 
-  backgroundConnectionPort.onMessage.addListener((message: PortMessage) => {
-    const action = message.action;
+  backgroundConnectionPort.onMessage.addListener((message) => {
+    const action = (message as PortMessage).action;
     switch (action) {
       case "updateContent":
         let atLeastOne = false;
@@ -193,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (contentTableElement) {
           atLeastOne = buildTable(
             contentTableElement as HTMLTableElement,
-            message.tabStorage
+            (message as UpdateContentPortMessage).tabStorage
           );
         }
         if (atLeastOne) {
@@ -202,7 +209,9 @@ document.addEventListener("DOMContentLoaded", () => {
             noteElement.style.display = "none";
           }
         }
-        document.body.dataset["tabId"] = String(message.tabId);
+        document.body.dataset["tabId"] = String(
+          (message as UpdateContentPortMessage).tabId
+        );
         break;
     }
   });

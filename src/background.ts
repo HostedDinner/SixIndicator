@@ -7,10 +7,15 @@ import type {
   TabStorageCache,
 } from "./types/types";
 
-// TODO port to browser Namespace and Promises with kind of fallback/or polyfill for chrome
-//browser chrome fix
-//const browser = window.browser || window.chrome;
-const _browser = chrome;
+//browser/chrome namespace fix
+var _browser: typeof browser | typeof chrome;
+if (typeof browser !== "undefined") {
+  _browser = browser;
+} else if (typeof chrome !== "undefined") {
+  _browser = chrome;
+} else {
+  throw "Neither browser nor chrome namespace is defined";
+}
 
 const requestFilter = {
   urls: ["<all_urls>"],
@@ -33,7 +38,8 @@ const SecureMode = {
 const ICONDIR = "icons/";
 
 // FIXME: this will not work, when service worker shuts down
-let popupConnectionPort: chrome.runtime.Port | null = null;
+let popupConnectionPort: browser.runtime.Port | chrome.runtime.Port | null =
+  null;
 let popupConnectionTabId: number | null = null;
 
 // types
@@ -390,8 +396,8 @@ _browser.runtime.onSuspend.addListener(() => {
 _browser.runtime.onConnect.addListener((port) => {
   popupConnectionPort = port;
 
-  popupConnectionPort.onMessage.addListener((message: PortMessage) => {
-    const action = message.action;
+  popupConnectionPort.onMessage.addListener((message) => {
+    const action = (message as PortMessage).action;
     switch (action) {
       case "requestContent":
         queryActiveTabId().then((tabId) => {
