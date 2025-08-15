@@ -18,13 +18,13 @@
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.10",
-    "@types/chrome": "^0.1.1",
+    "@types/chrome": "^0.1.4",
     "@types/copyfiles": "^2.4.4",
     "@types/firefox-webext-browser": "^120.0.4",
     "commander": "^14.0.0",
     "copyfiles": "^2.4.1",
     "rimraf": "^6.0.1",
-    "typescript": "^5.8.3",
+    "typescript": "^5.9.2",
     "web-ext": "^8.9.0"
   }
 }
