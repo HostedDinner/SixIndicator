@@ -171,18 +171,24 @@ async function updatePageAction(tabStorage: ITabStorage) {
     }
   }
 
-  let writeBack = false;
-
   if (title === tabStorage.lastRenderedTitle) {
     title = undefined;
-  } else {
-    tabStorage.lastRenderedTitle = title;
-    writeBack = true;
   }
 
   if (ipVersion === tabStorage.lastRenderedIpVersion) {
     ipVersion = undefined;
-  } else {
+  }
+
+  // sets the PageAction title and icon accordingly
+  await updateTitleAndIcon(tabId, title, ipVersion);
+
+  let writeBack = false;
+  if (title !== tabStorage.lastRenderedTitle) {
+    tabStorage.lastRenderedTitle = title;
+    writeBack = true;
+  }
+
+  if (ipVersion !== tabStorage.lastRenderedIpVersion) {
     tabStorage.lastRenderedIpVersion = ipVersion;
     writeBack = true;
   }
@@ -190,9 +196,6 @@ async function updatePageAction(tabStorage: ITabStorage) {
   if (writeBack) {
     writeBackTabStorages();
   }
-
-  // sets the PageAction title and icon accordingly
-  await updateTitleAndIcon(tabId, title, ipVersion);
 }
 
 /**
