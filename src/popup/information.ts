@@ -196,11 +196,12 @@ document.addEventListener("DOMContentLoaded", () => {
     switch (action) {
       case "updateContent":
         let atLeastOne = false;
+        const tabStorage = (message as UpdateContentPortMessage).tabStorage;
         const contentTableElement = document.getElementById("contentTable");
         if (contentTableElement) {
           atLeastOne = buildTable(
             contentTableElement as HTMLTableElement,
-            (message as UpdateContentPortMessage).tabStorage
+            tabStorage
           );
         }
         if (atLeastOne) {
@@ -209,9 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
             noteElement.style.display = "none";
           }
         }
-        document.body.dataset["tabId"] = String(
-          (message as UpdateContentPortMessage).tabId
-        );
+        document.body.dataset["tabId"] = String(tabStorage.tabId);
         break;
     }
   });

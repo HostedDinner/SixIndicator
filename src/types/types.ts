@@ -10,15 +10,17 @@ export interface IIpInfo {
 }
 
 export interface ITabStorage {
+  tabId: number;
   entries: IIpInfo[];
   mainIp?: string | null;
   mainHostname?: string;
   preRequestState: boolean;
+  lastRenderedTitle?: string | null;
+  lastRenderedIpVersion?: string | null;
 }
 
 export type UpdateContentPortMessage = {
   action: "updateContent";
-  tabId: number;
   tabStorage: ITabStorage;
 };
 

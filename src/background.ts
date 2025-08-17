@@ -45,12 +45,16 @@ let popupConnectionTabId: number | null = null;
 // types
 
 class TabStorage implements ITabStorage {
+  tabId: number;
   entries: IIpInfo[];
   mainIp?: string | null;
   mainHostname?: string;
   preRequestState: boolean;
+  lastRenderedTitle?: string;
+  lastRenderedIpVersion?: string;
 
-  constructor() {
+  constructor(tabId: number) {
+    this.tabId = tabId;
     this.entries = [];
     this.preRequestState = true;
   }
@@ -107,16 +111,16 @@ async function queryActiveTabId() {
   throw "Found " + activeTabs.length + " Tabs, instead of 1";
 }
 
-async function updatePageAction(tabId: number) {
+async function updatePageAction(tabStorage: ITabStorage) {
+  const tabId = tabStorage.tabId;
   if (tabId === -1) {
     return;
   }
 
-  const tabStorage = await getOrCreateTabStorage(tabId);
   const mainHostname = tabStorage.mainHostname;
 
-  let title = null;
-  let paths = null;
+  let title: string | null | undefined = null;
+  let ipVersion: string | null | undefined = null;
 
   if (mainHostname) {
     const mainIp = tabStorage.mainIp;
@@ -154,17 +158,12 @@ async function updatePageAction(tabId: number) {
         printedIp ?? "",
       ]);
 
-      //const path = [ICONDIR, ipInfo.ipVersion, ".svg"].join("");
-      paths = {
-        "48": [ICONDIR, ipInfo.ipVersion, "_48.png"].join(""),
-        "128": [ICONDIR, ipInfo.ipVersion, "_128.png"].join(""),
-      };
+      ipVersion = ipInfo.ipVersion;
 
       // send Message to information popup (if its connected at the moment)
       if (popupConnectionPort !== null && tabId === popupConnectionTabId) {
         const message: UpdateContentPortMessage = {
           action: "updateContent",
-          tabId,
           tabStorage,
         };
         popupConnectionPort.postMessage(message);
@@ -172,8 +171,28 @@ async function updatePageAction(tabId: number) {
     }
   }
 
+  let writeBack = false;
+
+  if (title === tabStorage.lastRenderedTitle) {
+    title = undefined;
+  } else {
+    tabStorage.lastRenderedTitle = title;
+    writeBack = true;
+  }
+
+  if (ipVersion === tabStorage.lastRenderedIpVersion) {
+    ipVersion = undefined;
+  } else {
+    tabStorage.lastRenderedIpVersion = ipVersion;
+    writeBack = true;
+  }
+
+  if (writeBack) {
+    writeBackTabStorages();
+  }
+
   // sets the PageAction title and icon accordingly
-  await updateTitleAndIcon(tabId, title, paths);
+  await updateTitleAndIcon(tabId, title, ipVersion);
 }
 
 /**
@@ -248,7 +267,7 @@ async function getOrCreateTabStorage(tabId: number) {
 
   let tabStorage = tsc[key];
   if (tabStorage == undefined) {
-    tabStorage = new TabStorage();
+    tabStorage = new TabStorage(tabId);
     tsc[key] = tabStorage;
     writeBackTabStorages();
   }
@@ -279,28 +298,41 @@ function writeBackTabStorages() {
 
 async function updateTitleAndIcon(
   tabId: number,
-  title: string | null,
-  paths: string | { [index: number]: string } | null
+  title: string | null | undefined,
+  ipVersion: string | null | undefined
 ) {
   if (tabId === -1) {
     return;
   }
 
-  title = title ?? _browser.i18n.getMessage("popupDefaultText");
-  paths = paths ?? {
-    "48": [ICONDIR, "unknown_48.png"].join(""),
-    "128": [ICONDIR, "unknown_128.png"].join(""),
-  };
+  if (title !== undefined) {
+    title = title ?? _browser.i18n.getMessage("popupDefaultText");
+    await _browser.action.setTitle({
+      tabId,
+      title: title,
+    });
+  }
 
-  await _browser.action.setTitle({
-    tabId,
-    title: title ?? _browser.i18n.getMessage("popupDefaultText"),
-  });
+  if (ipVersion !== undefined) {
+    let paths: { [index: number]: string };
+    if (ipVersion === null) {
+      paths = {
+        "48": [ICONDIR, "unknown_48.png"].join(""),
+        "128": [ICONDIR, "unknown_128.png"].join(""),
+      };
+    } else {
+      //path = [ICONDIR, ipVersion, ".svg"].join("");
+      paths = {
+        "48": [ICONDIR, ipVersion, "_48.png"].join(""),
+        "128": [ICONDIR, ipVersion, "_128.png"].join(""),
+      };
+    }
 
-  await _browser.action.setIcon({
-    tabId,
-    path: paths,
-  });
+    await _browser.action.setIcon({
+      tabId,
+      path: paths,
+    });
+  }
 }
 
 // listeners
@@ -333,7 +365,7 @@ _browser.webNavigation.onBeforeNavigate.addListener(async (details) => {
     ipInfo.counter++;
     tabStorage.entries.push(ipInfo);
 
-    updatePageAction(tabId);
+    updatePageAction(tabStorage);
   }
 
   writeBackTabStorages();
@@ -403,7 +435,7 @@ _browser.webRequest.onResponseStarted.addListener(async (details) => {
 
   writeBackTabStorages();
 
-  updatePageAction(tabId);
+  updatePageAction(tabStorage);
 }, requestFilter);
 
 /**
@@ -445,7 +477,9 @@ _browser.runtime.onConnect.addListener((port) => {
       case "requestContent":
         queryActiveTabId().then((tabId) => {
           popupConnectionTabId = tabId;
-          updatePageAction(popupConnectionTabId);
+          getOrCreateTabStorage(tabId).then((ts) => {
+            updatePageAction(ts);
+          });
         });
         break;
     }
